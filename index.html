@@ -1,0 +1,3182 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GRAMMAR GOLF — สนามกอล์ฟพิชิตอาการนาม</title>
+    <!-- ฟอนต์ Sarabun ตามข้อกำหนด -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #047857;
+            --primary-light: #a7f3d0;
+            --secondary: #f59e0b;
+            --secondary-dark: #b45309;
+            --accent: #3b82f6;
+            --accent-dark: #1d4ed8;
+            --danger: #ef4444;
+            --danger-dark: #b91c1c;
+            --sky-top: #38bdf8;
+            --sky-bottom: #bae6fd;
+            --grass-light: #4ade80;
+            --grass-dark: #22c55e;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.18), 0 4px 10px -2px rgba(0, 0, 0, 0.1);
+            --shadow-btn: 0 5px 0 var(--primary-dark);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* ห้ามเกิด Scrollbar แนวตั้งและแนวนอน */
+            background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+            color: var(--text-main);
+        }
+
+        /* ระบบจัดการหน้าจอแบบ Fixed Viewport */
+        .screen {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            padding: 12px;
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+            50% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
+        }
+
+        /* ปุ่มสไตล์เกมการ์ตูนมีมิติ */
+        .btn {
+            border: none;
+            border-radius: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.1s ease, filter 0.15s ease;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            color: white;
+            padding: 12px 24px;
+            font-size: clamp(1rem, 2.2vw, 1.25rem);
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.3) !important;
+        }
+
+        .btn:hover {
+            filter: brightness(1.06);
+        }
+
+        .btn-green {
+            background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+            box-shadow: 0 5px 0 #047857, 0 8px 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-amber {
+            background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+            box-shadow: 0 5px 0 #b45309, 0 8px 15px rgba(245, 158, 11, 0.35);
+            color: #451a03;
+            text-shadow: none;
+        }
+
+        .btn-blue {
+            background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+            box-shadow: 0 5px 0 #1d4ed8, 0 8px 15px rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-red {
+            background: linear-gradient(180deg, #f87171 0%, #ef4444 100%);
+            box-shadow: 0 5px 0 #b91c1c, 0 8px 15px rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-slate {
+            background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
+            box-shadow: 0 5px 0 #334155;
+        }
+
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border-radius: 14px;
+        }
+
+        /* พื้นหลังฉากตกแต่ง SVG ด้านหลัง */
+        #bg-scenery {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ==================== หน้า 1: MAIN MENU ==================== */
+        #screen-menu {
+            justify-content: space-between;
+            padding: 2vh 4vw 3vh 4vw;
+        }
+
+        .menu-top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .star-counter-badge {
+            background: var(--panel-bg);
+            border: 3px solid #fbbf24;
+            border-radius: 99px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: #92400e;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .menu-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex: 1;
+            max-height: 72vh;
+            width: 100%;
+        }
+
+        .game-logo-box {
+            animation: float 3.5s ease-in-out infinite;
+            margin-bottom: 1vh;
+        }
+
+        .logo-title {
+            font-size: clamp(2.2rem, 6.5vw, 4.4rem);
+            font-weight: 800;
+            line-height: 1.05;
+            background: linear-gradient(180deg, #ffffff 10%, #fef08a 90%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 5px 0 #065f46) drop-shadow(0 8px 16px rgba(0,0,0,0.25));
+            letter-spacing: 1px;
+        }
+
+        .logo-subtitle {
+            display: inline-block;
+            background: #065f46;
+            color: #fde047;
+            padding: 6px 24px;
+            border-radius: 99px;
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            font-weight: 800;
+            border: 3px solid #34d399;
+            margin-top: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .mascot-stage {
+            height: clamp(140px, 28vh, 240px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1vh 0;
+        }
+
+        .menu-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        .menu-actions .btn-play-main {
+            width: 100%;
+            max-width: 320px;
+            font-size: clamp(1.25rem, 3vw, 1.6rem);
+            padding: 16px 32px;
+        }
+
+        /* ==================== หน้า 2: เลือกสนาม (10 ด่าน) ==================== */
+        #screen-levels {
+            justify-content: space-between;
+            padding: 14px 20px;
+        }
+
+        .screen-header {
+            width: 100%;
+            max-width: 1120px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--panel-bg);
+            padding: 10px 20px;
+            border-radius: 22px;
+            box-shadow: var(--shadow-lg);
+            border: 3px solid #e2e8f0;
+        }
+
+        .screen-title {
+            font-size: clamp(1.2rem, 2.8vw, 1.8rem);
+            font-weight: 800;
+            color: #065f46;
+        }
+
+        .levels-grid {
+            width: 100%;
+            max-width: 1120px;
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+            max-height: calc(100vh - 105px);
+        }
+
+        @media (max-width: 900px) {
+            .levels-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(5, 1fr);
+                gap: 8px;
+            }
+        }
+
+        .level-card {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            border: 3px solid #cbd5e1;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card:hover:not(.locked) {
+            transform: translateY(-4px);
+            border-color: #10b981;
+        }
+
+        .level-card.locked {
+            opacity: 0.78;
+            filter: grayscale(0.65);
+            cursor: not-allowed;
+            background: #f1f5f9;
+        }
+
+        .level-preview-box {
+            width: 100%;
+            height: 44%;
+            min-height: 46px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid rgba(0,0,0,0.08);
+        }
+
+        .level-num-pill {
+            position: absolute;
+            top: 4px;
+            left: 6px;
+            background: rgba(15, 23, 42, 0.75);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 99px;
+        }
+
+        .level-name {
+            font-size: clamp(0.82rem, 1.3vw, 1.02rem);
+            font-weight: 800;
+            text-align: center;
+            color: #1e293b;
+            line-height: 1.15;
+            margin: 2px 0;
+        }
+
+        .level-diff {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+        }
+
+        .diff-easy { background: #dcfce7; color: #166534; }
+        .diff-med { background: #fef3c7; color: #92400e; }
+        .diff-hard { background: #fee2e2; color: #991b1b; }
+
+        .level-stars {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        /* ==================== หน้า 3: สนามแข่งขัน ==================== */
+        #screen-game {
+            padding: 0;
+            justify-content: space-between;
+            background: #15803d;
+        }
+
+        #golf-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+            z-index: 1;
+        }
+
+        .hud-top {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .hud-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: auto;
+        }
+
+        .hud-pill {
+            background: rgba(255, 255, 255, 0.94);
+            border: 2.5px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 800;
+            font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            color: #0f172a;
+        }
+
+        .hud-pill span.val {
+            color: #059669;
+            font-size: 1.15em;
+        }
+
+        .hud-bottom {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            padding: 10px 16px 14px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #10b981;
+            border-radius: 22px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow-lg);
+            pointer-events: auto;
+            margin: 0 auto;
+        }
+
+        .power-meter-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 150px;
+        }
+
+        .power-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #334155;
+        }
+
+        .power-bar-bg {
+            width: 100%;
+            height: 18px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+            border: 2px solid #94a3b8;
+            position: relative;
+        }
+
+        .power-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #22c55e 0%, #eab308 55%, #ef4444 100%);
+            border-radius: 99px;
+            transition: width 0.05s linear;
+        }
+
+        .status-hint-banner {
+            background: rgba(15, 23, 42, 0.84);
+            color: #fef08a;
+            padding: 6px 16px;
+            border-radius: 99px;
+            font-size: clamp(0.85rem, 1.6vw, 1rem);
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid #fbbf24;
+            pointer-events: auto;
+            margin: 0 auto;
+        }
+
+        /* ==================== หน้าต่าง POPUP / MODAL ==================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.68);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 26px;
+            width: 100%;
+            max-width: 620px;
+            max-height: 92vh; /* ไม่ล้นหน้าจอแน่นอน */
+            display: flex;
+            flex-direction: column;
+            padding: 18px 22px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+            border: 4px solid #34d399;
+            position: relative;
+        }
+
+        .q-badge-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .q-type-tag {
+            background: #d1fae5;
+            color: #065f46;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 99px;
+        }
+
+        .q-progress-tag {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 99px;
+        }
+
+        .q-prompt-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 14px 16px;
+            font-size: clamp(1.05rem, 2.3vw, 1.35rem);
+            font-weight: 800;
+            color: #0f172a;
+            text-align: center;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .q-choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 520px) {
+            .q-choices-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+
+        .choice-btn {
+            background: #f1f5f9;
+            border: 3px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 12px 14px;
+            font-size: clamp(0.95rem, 2vw, 1.15rem);
+            font-weight: 700;
+            color: #1e293b;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.12s ease;
+        }
+
+        .choice-btn:hover:not(:disabled) {
+            background: #e0f2fe;
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+
+        .choice-btn.correct {
+            background: #dcfce7;
+            border-color: #22c55e;
+            color: #14532d;
+        }
+
+        .choice-btn.wrong {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #7f1d1d;
+        }
+
+        .choice-letter {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            background: #ffffff;
+            border: 2px solid #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .q-explanation-box {
+            display: none;
+            border-radius: 16px;
+            padding: 12px 14px;
+            margin-top: 4px;
+            font-size: clamp(0.9rem, 1.8vw, 1.02rem);
+            line-height: 1.45;
+        }
+
+        .q-explanation-box.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .exp-correct {
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            color: #064e3b;
+        }
+
+        .exp-wrong {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            color: #7f1d1d;
+        }
+
+        /* ==================== หน้า 4: สรุปผล ==================== */
+        .summary-card {
+            background: var(--panel-bg);
+            border-radius: 28px;
+            border: 4px solid #fbbf24;
+            padding: 20px 26px;
+            width: 100%;
+            max-width: 540px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .summary-stars-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 10px 0 14px 0;
+        }
+
+        .summary-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* ==================== หน้า 5: วิธีเล่น ==================== */
+        .howto-card {
+            background: var(--panel-bg);
+            border-radius: 26px;
+            border: 4px solid #3b82f6;
+            padding: 18px 22px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .howto-steps {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        @media (max-width: 640px) {
+            .howto-steps {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .step-item {
+            background: #f0f9ff;
+            border: 2px solid #bae6fd;
+            border-radius: 16px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .grammar-tip-box {
+            background: #fefce8;
+            border: 2px solid #fde047;
+            border-radius: 16px;
+            padding: 10px 14px;
+            font-size: clamp(0.85rem, 1.6vw, 0.98rem);
+            color: #713f12;
+            line-height: 1.4;
+        }
+
+        /* Toast แจ้งเตือนในสนาม */
+        #toast-banner {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #0f172a;
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 99px;
+            font-weight: 800;
+            font-size: 1.05rem;
+            z-index: 60;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+            border: 3px solid #fbbf24;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+            white-space: nowrap;
+        }
+
+        #toast-banner.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Slider ตั้งค่าเสียง */
+        input[type="range"] {
+            width: 100%;
+            accent-color: #10b981;
+            height: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ฉากหลังการ์ตูนสนามกอล์ฟแฟนตาซี (SVG เต็มจอ) -->
+    <svg id="bg-scenery" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+        <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#e0f2fe"/>
+            </linearGradient>
+            <linearGradient id="hillBack" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#86efac"/>
+                <stop offset="100%" stop-color="#22c55e"/>
+            </linearGradient>
+            <linearGradient id="hillFront" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#15803d"/>
+            </linearGradient>
+        </defs>
+        <rect width="1440" height="900" fill="url(#skyGrad)"/>
+        <!-- ดวงอาทิตย์ยิ้มแย้ม -->
+        <circle cx="1260" cy="140" r="65" fill="#fde047" opacity="0.9"/>
+        <circle cx="1260" cy="140" r="85" fill="#fef08a" opacity="0.35"/>
+        <!-- เมฆการ์ตูน -->
+        <g fill="#ffffff" opacity="0.9">
+            <path d="M180,150 Q200,110 245,120 Q280,95 320,125 Q355,130 350,165 Q345,190 310,190 L190,190 Q160,185 180,150 Z"/>
+            <path d="M720,110 Q745,75 785,85 Q820,65 855,95 Q890,100 880,135 L730,135 Q705,130 720,110 Z"/>
+        </g>
+        <!-- เนินเขาไกล -->
+        <path d="M0,560 Q360,410 760,540 T1440,490 L1440,900 L0,900 Z" fill="url(#hillBack)"/>
+        <!-- กังหันลมบนเนิน -->
+        <g transform="translate(260, 415)">
+            <polygon points="-22,70 22,70 14,0 -14,0" fill="#fef3c7" stroke="#b45309" stroke-width="3"/>
+            <polygon points="-18,0 18,0 0,-22" fill="#ef4444"/>
+            <g transform="translate(0, 5)">
+                <rect x="-3" y="-52" width="6" height="104" fill="#78350f"/>
+                <rect x="-52" y="-3" width="104" height="6" fill="#78350f"/>
+                <rect x="2" y="-48" width="14" height="34" fill="#ffffff" opacity="0.85"/>
+                <rect x="-16" y="14" width="14" height="34" fill="#ffffff" opacity="0.85"/>
+                <circle cx="0" cy="0" r="6" fill="#f59e0b"/>
+            </g>
+        </g>
+        <!-- เนินหญ้าหน้า -->
+        <path d="M0,630 Q480,530 960,640 T1440,590 L1440,900 L0,900 Z" fill="url(#hillFront)"/>
+        <!-- บ่อน้ำใส -->
+        <ellipse cx="1120" cy="740" rx="180" ry="52" fill="#38bdf8" stroke="#bae6fd" stroke-width="6"/>
+        <!-- ธงกอล์ฟระยะไกล -->
+        <g transform="translate(1050, 575)">
+            <ellipse cx="0" cy="48" rx="16" ry="6" fill="#0f172a"/>
+            <line x1="0" y1="48" x2="0" y2="-25" stroke="#ffffff" stroke-width="4"/>
+            <polygon points="0,-25 38,-12 0,2" fill="#ef4444"/>
+        </g>
+    </svg>
+
+    <!-- แบนเนอร์แจ้งเตือนสั้นๆ -->
+    <div id="toast-banner">ข้อความแจ้งเตือน</div>
+
+    <!-- ==================== หน้า 1: MAIN MENU ==================== -->
+    <section id="screen-menu" class="screen active">
+        <div class="menu-top-bar">
+            <div class="star-counter-badge">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#f59e0b">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span id="menu-total-stars">0 / 30 ดาว</span>
+            </div>
+            <button class="btn btn-blue btn-icon" id="btn-open-sound" title="ตั้งค่าเสียง" aria-label="ตั้งค่าเสียง">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="menu-center">
+            <div class="game-logo-box">
+                <h1 class="logo-title">GRAMMAR GOLF</h1>
+                <div class="logo-subtitle">สนามกอล์ฟพิชิตอาการนาม</div>
+            </div>
+
+            <!-- มาสคอตนักกอล์ฟตัวน้อย (SVG การ์ตูน) -->
+            <div class="mascot-stage">
+                <svg viewBox="0 0 240 240" width="100%" height="100%">
+                    <!-- เงาพื้น -->
+                    <ellipse cx="120" cy="218" rx="64" ry="14" fill="rgba(0,0,0,0.2)"/>
+                    <!-- ไม้กอล์ฟ -->
+                    <g transform="rotate(-18 155 150)">
+                        <rect x="152" y="45" width="6" height="145" rx="3" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+                        <rect x="151" y="42" width="8" height="32" rx="3" fill="#ef4444"/>
+                        <path d="M152,188 L178,188 Q186,188 186,196 L186,202 Q186,206 176,206 L152,206 Z" fill="#334155"/>
+                    </g>
+                    <!-- ขาและรองเท้า -->
+                    <rect x="92" y="168" width="18" height="36" rx="8" fill="#fef3c7" stroke="#92400e" stroke-width="2"/>
+                    <rect x="126" y="168" width="18" height="36" rx="8" fill="#fef3c7" stroke="#92400e" stroke-width="2"/>
+                    <path d="M84,202 Q84,194 98,194 L112,194 Q116,194 116,206 L84,206 Z" fill="#ffffff" stroke="#1e293b" stroke-width="2.5"/>
+                    <path d="M122,202 Q122,194 136,194 L150,194 Q154,194 154,206 L122,206 Z" fill="#ffffff" stroke="#1e293b" stroke-width="2.5"/>
+                    <!-- กางเกงและเสื้อกอล์ฟ -->
+                    <path d="M86,145 L150,145 L146,174 L122,174 L118,162 L114,174 L90,174 Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="2.5"/>
+                    <path d="M82,102 Q118,92 154,102 L150,148 L86,148 Z" fill="#10b981" stroke="#047857" stroke-width="2.5"/>
+                    <!-- ปกเสื้อโปโล -->
+                    <polygon points="104,98 118,112 110,118 98,104" fill="#ffffff"/>
+                    <polygon points="132,98 118,112 126,118 138,104" fill="#ffffff"/>
+                    <!-- แขน -->
+                    <path d="M84,106 Q68,125 84,142" fill="none" stroke="#fde68a" stroke-width="14" stroke-linecap="round"/>
+                    <path d="M152,106 Q168,125 154,142" fill="none" stroke="#fde68a" stroke-width="14" stroke-linecap="round"/>
+                    <!-- ถุงมือกอล์ฟ -->
+                    <circle cx="86" cy="144" r="9" fill="#ffffff" stroke="#64748b" stroke-width="2"/>
+                    <circle cx="152" cy="144" r="9" fill="#ffffff" stroke="#64748b" stroke-width="2"/>
+                    <!-- ศีรษะ -->
+                    <circle cx="118" cy="68" r="34" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/>
+                    <!-- แก้มแดงและหน้าตายิ้มแย้ม -->
+                    <circle cx="101" cy="74" r="5" fill="#fca5a5"/>
+                    <circle cx="135" cy="74" r="5" fill="#fca5a5"/>
+                    <circle cx="106" cy="64" r="4" fill="#1e293b"/>
+                    <circle cx="130" cy="64" r="4" fill="#1e293b"/>
+                    <circle cx="107.5" cy="62.5" r="1.5" fill="#ffffff"/>
+                    <circle cx="131.5" cy="62.5" r="1.5" fill="#ffffff"/>
+                    <path d="M110,77 Q118,86 126,77" fill="none" stroke="#92400e" stroke-width="3" stroke-linecap="round"/>
+                    <!-- หมวกแก๊ปกอล์ฟ -->
+                    <path d="M84,54 Q84,26 118,26 Q152,26 152,54 Z" fill="#f59e0b" stroke="#b45309" stroke-width="2.5"/>
+                    <path d="M84,52 Q125,44 168,54 Q152,60 84,54 Z" fill="#fbbf24" stroke="#b45309" stroke-width="2"/>
+                    <!-- ลูกกอล์ฟข้างเท้า -->
+                    <circle cx="64" cy="204" r="10" fill="#ffffff" stroke="#64748b" stroke-width="2"/>
+                </svg>
+            </div>
+
+            <div class="menu-actions">
+                <button class="btn btn-green btn-play-main" id="btn-start-play">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    เริ่มเล่นเกม
+                </button>
+                <div style="display:flex; gap:12px; width:100%; justify-content:center;">
+                    <button class="btn btn-amber" id="btn-select-level">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                        เลือกสนาม (10 ด่าน)
+                    </button>
+                    <button class="btn btn-blue" id="btn-howto">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        วิธีเล่นและบทเรียน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== หน้า 2: เลือกสนาม (10 ด่าน) ==================== -->
+    <section id="screen-levels" class="screen">
+        <div class="screen-header">
+            <button class="btn btn-slate" id="btn-levels-back" style="padding:8px 16px;">
+                ◀ เมนูหลัก
+            </button>
+            <h2 class="screen-title">เลือกสนามแข่งขัน (10 สนาม)</h2>
+            <div class="star-counter-badge" style="padding:4px 14px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span id="levels-total-stars">0/30</span>
+            </div>
+        </div>
+
+        <div class="levels-grid" id="levels-grid-container">
+            <!-- สร้างการ์ด 10 ด่านอัตโนมัติด้วย JS -->
+        </div>
+    </section>
+
+    <!-- ==================== หน้า 3: สนามแข่งขัน ==================== -->
+    <section id="screen-game" class="screen">
+        <canvas id="golf-canvas"></canvas>
+
+        <!-- แถบข้อมูลด้านบน -->
+        <div class="hud-top">
+            <div class="hud-group">
+                <button class="btn btn-slate btn-icon" id="btn-game-menu" title="กลับหน้าเลือกด่าน">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </button>
+                <div class="hud-pill">
+                    <span id="hud-level-name">ด่าน 1</span>
+                </div>
+            </div>
+
+            <div class="hud-group">
+                <div class="hud-pill">
+                    ตีครั้งที่: <span class="val" id="hud-strokes">0</span> / <span id="hud-par">3</span>
+                </div>
+                <div class="hud-pill">
+                    คำถาม: <span class="val" id="hud-q-count">0/6</span>
+                </div>
+                <div class="hud-pill">
+                    คะแนน: <span class="val" id="hud-score">0</span>
+                </div>
+                <button class="btn btn-amber btn-icon" id="btn-pause-game" title="หยุดชั่วคราว">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- แถบควบคุมด้านล่าง -->
+        <div class="hud-bottom">
+            <div class="status-hint-banner" id="game-hint-text">
+                กดปุ่ม "ตอบคำถามอาการนาม" เพื่อปลดล็อกไม้กอล์ฟ!
+            </div>
+
+            <div class="control-panel" id="game-control-panel">
+                <!-- ปุ่มเปิดคำถาม (แสดงเมื่อยังไม่ปลดล็อกการตี) -->
+                <button class="btn btn-amber" id="btn-open-question" style="animation: pulseGlow 1.8s infinite;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    ตอบคำถามอาการนาม
+                </button>
+
+                <!-- แผงควบคุมการตี (แสดงเมื่อตอบถูกแล้ว) -->
+                <div id="aim-controls-box" style="display:none; align-items:center; gap:12px;">
+                    <div class="power-meter-wrap">
+                        <div class="power-label-row">
+                            <span>พลังการตี</span>
+                            <span id="power-pct-text">50%</span>
+                        </div>
+                        <div class="power-bar-bg">
+                            <div class="power-bar-fill" id="power-bar-fill" style="width: 50%;"></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-green" id="btn-swing">
+                        SWING!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== หน้า 4: สรุปผล ==================== -->
+    <section id="screen-summary" class="screen">
+        <div class="summary-card">
+            <h2 style="font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight:800; color:#065f46;" id="sum-title">
+                ยอดเยี่ยม! พิชิตสนามสำเร็จ
+            </h2>
+            <p style="color:#475569; font-weight:700; margin-top:4px;" id="sum-subtitle">สนามฝึกหัดอาการนาม</p>
+
+            <div class="summary-stars-row" id="sum-stars-container">
+                <!-- ดาว 3 ดวง -->
+            </div>
+
+            <div class="summary-stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">คะแนนรวม</div>
+                    <div class="stat-value" style="color:#059669;" id="sum-score">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">จำนวนครั้งที่ตี</div>
+                    <div class="stat-value" id="sum-strokes">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">ตอบถูก</div>
+                    <div class="stat-value" style="color:#16a34a;" id="sum-correct">0 ข้อ</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">ตอบผิด</div>
+                    <div class="stat-value" style="color:#dc2626;" id="sum-wrong">0 ข้อ</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                <button class="btn btn-slate" id="btn-sum-levels">เลือกสนาม</button>
+                <button class="btn btn-amber" id="btn-sum-retry">เล่นอีกครั้ง</button>
+                <button class="btn btn-green" id="btn-sum-next">ด่านถัดไป ▶</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== หน้า 5: วิธีเล่น ==================== -->
+    <section id="screen-howto" class="screen">
+        <div class="howto-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="font-size: clamp(1.25rem, 3vw, 1.75rem); font-weight:800; color:#1d4ed8;">
+                    วิธีเล่นและสรุปความรู้ "อาการนาม"
+                </h2>
+                <button class="btn btn-red" id="btn-howto-close" style="padding:6px 14px;">ปิด ✕</button>
+            </div>
+
+            <div class="howto-steps">
+                <div class="step-item">
+                    <svg width="42" height="42" viewBox="0 0 48 48" style="flex-shrink:0;">
+                        <circle cx="24" cy="24" r="22" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+                        <text x="24" y="31" text-anchor="middle" font-size="22" font-weight="800" fill="#b45309">?</text>
+                    </svg>
+                    <div>
+                        <div style="font-weight:800; color:#0f172a;">1. ตอบคำถามเพื่อปลดล็อกไม้กอล์ฟ</div>
+                        <div style="font-size:0.85rem; color:#475569;">กดปุ่มคำถามและเลือกคำตอบเรื่องอาการนามให้ถูกต้อง</div>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <svg width="42" height="42" viewBox="0 0 48 48" style="flex-shrink:0;">
+                        <circle cx="24" cy="24" r="22" fill="#dcfce7" stroke="#10b981" stroke-width="3"/>
+                        <path d="M14,32 L34,14 M34,14 L24,14 M34,14 L34,24" stroke="#047857" stroke-width="4" stroke-linecap="round" fill="none"/>
+                    </svg>
+                    <div>
+                        <div style="font-weight:800; color:#0f172a;">2. ลากลูกกอล์ฟเพื่อเล็งและปรับแรง</div>
+                        <div style="font-size:0.85rem; color:#475569;">แตะหรือคลิกลากที่ลูกกอล์ฟเพื่อกำหนดทิศทางและความแรง</div>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <svg width="42" height="42" viewBox="0 0 48 48" style="flex-shrink:0;">
+                        <circle cx="24" cy="24" r="22" fill="#e0f2fe" stroke="#3b82f6" stroke-width="3"/>
+                        <circle cx="24" cy="28" r="8" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+                        <path d="M12,18 Q24,8 36,18" stroke="#ef4444" stroke-width="3" fill="none"/>
+                    </svg>
+                    <div>
+                        <div style="font-weight:800; color:#0f172a;">3. กด SWING ตีลูกหลบอุปสรรค</div>
+                        <div style="font-size:0.85rem; color:#475569;">ระวังบ่อน้ำ บังเกอร์ทราย และกังหันลม ใช้สะพานและแท่นกระโดดให้เป็นประโยชน์</div>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <svg width="42" height="42" viewBox="0 0 48 48" style="flex-shrink:0;">
+                        <circle cx="24" cy="24" r="22" fill="#fce7f3" stroke="#ec4899" stroke-width="3"/>
+                        <line x1="20" y1="36" x2="20" y2="12" stroke="#334155" stroke-width="3"/>
+                        <polygon points="20,12 36,18 20,24" fill="#ef4444"/>
+                    </svg>
+                    <div>
+                        <div style="font-weight:800; color:#0f172a;">4. พิชิตหลุมรับ 3 ดาว</div>
+                        <div style="font-size:0.85rem; color:#475569;">ตีลูกลงหลุมโดยใช้จำนวนครั้งน้อยและตอบถูกครบทุกข้อ</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grammar-tip-box">
+                <div style="font-weight:800; font-size:1.05rem; margin-bottom:4px; color:#92400e;">
+                    สรุปหลักจำง่ายๆ เรื่อง "อาการนาม"
+                </div>
+                <div>
+                    <strong>อาการนาม</strong> คือ คำนามที่เกิดจากนำคำว่า <strong>"การ"</strong> หรือ <strong>"ความ"</strong> มาเติมหน้าคำกริยาหรือคำวิเศษณ์
+                    <br>• <strong>"การ"</strong> ใช้เติมหน้า <u>คำกริยาที่แสดงการกระทำ</u> เช่น <em>การเดิน, การวิ่ง, การอ่าน, การเขียน, การเรียน</em>
+                    <br>• <strong>"ความ"</strong> ใช้เติมหน้า <u>คำกริยาเกี่ยวกับจิตใจ หรือคำวิเศษณ์</u> เช่น <em>ความรัก, ความคิด, ความสุข, ความดี, ความขยัน</em>
+                    <br>• <strong>ข้อควรระวัง:</strong> หาก "การ" หรือ "ความ" นำหน้า <u>คำนาม</u> จะเป็นคำประสม <strong>ไม่ใช่อาการนาม</strong> เช่น <em>การบ้าน, การรถไฟ, ความวัว</em>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== MODAL: คำถามอาการนาม ==================== -->
+    <div id="modal-question" class="modal-overlay">
+        <div class="modal-card">
+            <div class="q-badge-row">
+                <span class="q-type-tag" id="q-type-label">ประเภทคำถาม</span>
+                <span class="q-progress-tag" id="q-num-label">ข้อที่ 1 / 6</span>
+            </div>
+            <div class="q-prompt-box" id="q-prompt-text">
+                คำถามจะปรากฏที่นี่
+            </div>
+            <div class="q-choices-grid" id="q-choices-container">
+                <!-- ตัวเลือก A B C D -->
+            </div>
+            <div class="q-explanation-box" id="q-exp-box">
+                <div style="font-weight:800; margin-bottom:4px;" id="q-exp-title"></div>
+                <div id="q-exp-text"></div>
+                <div style="margin-top:10px; text-align:right;">
+                    <button class="btn btn-green" id="btn-q-continue" style="padding:8px 20px; font-size:1rem;">
+                        ดำเนินการต่อ ▶
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: หยุดชั่วคราว (PAUSE) ==================== -->
+    <div id="modal-pause" class="modal-overlay">
+        <div class="modal-card" style="max-width:400px; text-align:center;">
+            <h3 style="font-size:1.6rem; font-weight:800; color:#0f172a; margin-bottom:14px;">พักการแข่งขัน</h3>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="btn btn-green" id="btn-resume">เล่นต่อ ▶</button>
+                <button class="btn btn-amber" id="btn-restart-level">เริ่มสนามนี้ใหม่ ↻</button>
+                <button class="btn btn-blue" id="btn-pause-sound">ตั้งค่าเสียง</button>
+                <button class="btn btn-slate" id="btn-pause-quit">ออกจากสนาม</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: ตั้งค่าเสียง ==================== -->
+    <div id="modal-sound" class="modal-overlay">
+        <div class="modal-card" style="max-width:420px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h3 style="font-size:1.4rem; font-weight:800; color:#0f172a;">ตั้งค่าเสียงประกอบเกม</h3>
+                <button class="btn btn-red" id="btn-close-sound" style="padding:4px 12px;">✕</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:700;">เปิด/ปิด เสียงเอฟเฟกต์</span>
+                    <button class="btn btn-green" id="btn-toggle-sfx" style="padding:6px 16px; font-size:0.95rem;">เปิดอยู่</button>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:700;">เปิด/ปิด ดนตรีบรรเลง</span>
+                    <button class="btn btn-green" id="btn-toggle-bgm" style="padding:6px 16px; font-size:0.95rem;">เปิดอยู่</button>
+                </div>
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-weight:700; margin-bottom:6px;">
+                        <span>ระดับความดังรวม</span>
+                        <span id="vol-label">70%</span>
+                    </div>
+                    <input type="range" id="vol-slider" min="0" max="100" value="70">
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+/**
+ * ============================================================================
+ * GRAMMAR GOLF — สนามกอล์ฟพิชิตอาการนาม
+ * ระบบเสียงสังเคราะห์ (Web Audio API - ไม่มีเสียงพูด/ไม่มี Speech Synthesis)
+ * ============================================================================
+ */
+class SoundEngine {
+    constructor() {
+        this.ctx = null;
+        this.sfxEnabled = true;
+        this.bgmEnabled = true;
+        this.volume = 0.7;
+        this.bgmInterval = null;
+        this.bgmStep = 0;
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    playTone(freq, type, duration, delay = 0, volMult = 1) {
+        if (!this.sfxEnabled || this.volume <= 0) return;
+        this.init();
+        const now = this.ctx.currentTime + delay;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.25 * this.volume * volMult, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+    }
+
+    playClick() {
+        this.playTone(620, 'sine', 0.08, 0, 0.7);
+    }
+
+    playSwing() {
+        if (!this.sfxEnabled || this.volume <= 0) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(520, now + 0.12);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.22);
+        gain.gain.setValueAtTime(0.35 * this.volume, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+    }
+
+    playBounce() {
+        this.playTone(320, 'sine', 0.09, 0, 0.6);
+    }
+
+    playSplash() {
+        if (!this.sfxEnabled || this.volume <= 0) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(420, now);
+        osc.frequency.exponentialRampToValueAtTime(130, now + 0.35);
+        gain.gain.setValueAtTime(0.3 * this.volume, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.38);
+    }
+
+    playJump() {
+        this.playTone(350, 'sine', 0.12, 0, 0.7);
+        this.playTone(580, 'sine', 0.18, 0.08, 0.7);
+    }
+
+    playCorrect() {
+        this.playTone(523.25, 'triangle', 0.14, 0, 0.9);    // C5
+        this.playTone(659.25, 'triangle', 0.14, 0.1, 0.9);  // E5
+        this.playTone(783.99, 'triangle', 0.25, 0.2, 1.0);  // G5
+    }
+
+    playWrong() {
+        this.playTone(260, 'sawtooth', 0.18, 0, 0.6);
+        this.playTone(210, 'sawtooth', 0.26, 0.14, 0.6);
+    }
+
+    playHoleIn() {
+        this.playTone(587.33, 'sine', 0.12, 0, 0.9);
+        this.playTone(880.00, 'sine', 0.28, 0.1, 1.0);
+    }
+
+    playWin() {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((n, idx) => {
+            this.playTone(n, 'triangle', 0.24, idx * 0.12, 1.0);
+        });
+    }
+
+    startBGM() {
+        if (this.bgmInterval) return;
+        const melody = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 392.00];
+        this.bgmInterval = setInterval(() => {
+            if (!this.bgmEnabled || this.volume <= 0 || document.hidden) return;
+            if (!this.ctx || this.ctx.state !== 'running') return;
+            const freq = melody[this.bgmStep % melody.length];
+            this.bgmStep++;
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.045 * this.volume, now + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.48);
+        }, 550);
+    }
+}
+
+const sound = new SoundEngine();
+
+/**
+ * ============================================================================
+ * คลังข้อสอบภาษาไทยเรื่อง "อาการนาม" ครบ 60 ข้อ (10 ด่าน x 6 ข้อ ไม่ซ้ำกัน)
+ * ครอบคลุมทั้ง 6 ประเภทคำถามตามข้อกำหนด
+ * ============================================================================
+ */
+const QUESTION_BANK = [
+    // ==================== ด่านที่ 1: สนามฝึกหัดอาการนาม (6 ข้อ) ====================
+    [
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดเป็นคำอาการนาม?",
+            choices: ["โรงเรียน", "การเดิน", "นักเรียน", "โต๊ะเรียน"],
+            answer: 1,
+            explanation: "ถูกต้อง! 'การเดิน' เกิดจากคำว่า 'การ' นำหน้าคำกริยา 'เดิน' จึงเป็นอาการนาม ส่วนข้ออื่นเป็นคำนามทั่วไปและคำประสม"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่างให้ถูกต้อง: _____ วิ่งออกกำลังกายทำให้ร่างกายแข็งแรง",
+            choices: ["การ", "ความ", "การความ", "ความการ"],
+            answer: 0,
+            explanation: "'วิ่ง' เป็นคำกริยาที่แสดงการกระทำของร่างกาย จึงใช้คำว่า 'การ' นำหน้า เป็น 'การวิ่ง'"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดเป็นคำอาการนาม?",
+            choices: ["ความดี", "ดินสอ", "บ้านเรือน", "แมวเหมียว"],
+            answer: 0,
+            explanation: "'ความดี' เกิดจากคำว่า 'ความ' นำหน้าคำวิเศษณ์ 'ดี' จึงเป็นคำอาการนาม"
+        },
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "คำว่า 'อ่าน' เมื่อทำให้เป็นอาการนามควรเขียนอย่างไร?",
+            choices: ["การอ่าน", "ความอ่าน", "อ่านการ", "อ่านความ"],
+            answer: 0,
+            explanation: "'อ่าน' เป็นคำกริยาแสดงอาการกระทำ เมื่อเติมคำว่า 'การ' ข้างหน้าจะได้อาการนามว่า 'การอ่าน'"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่างให้ถูกต้อง: _____ สุขเกิดจากการรู้จักแบ่งปัน",
+            choices: ["การ", "ความ", "นัก", "ผู้"],
+            answer: 1,
+            explanation: "'สุข' เป็นคำวิเศษณ์แสดงความรู้สึก จึงใช้คำว่า 'ความ' นำหน้า เป็น 'ความสุข'"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "นักเรียนตั้งใจฝึกฝน _______ ภาษาไทยทุกวัน",
+            choices: ["การเขียน", "ความโต๊ะ", "การบ้านเรือน", "ความปากกา"],
+            answer: 0,
+            explanation: "'การเขียน' เป็นอาการนามที่เกิดจากคำกริยา 'เขียน' เหมาะสมกับบริบทการฝึกฝนทักษะภาษาไทย"
+        }
+    ],
+
+    // ==================== ด่านที่ 2: ทุ่งหญ้าแห่งการสร้างคำ (6 ข้อ) ====================
+    [
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "อาการนามข้อใดสร้างมาจากคำกริยา?",
+            choices: ["การนอน", "ความสวย", "ความสูง", "ความขาว"],
+            answer: 0,
+            explanation: "'การนอน' มาจากคำกริยา 'นอน' ส่วน ความสวย ความสูง ความขาว มาจากคำวิเศษณ์"
+        },
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "อาการนามข้อใดสร้างมาจากคำวิเศษณ์?",
+            choices: ["การกิน", "การดื่ม", "ความขยัน", "การกระโดด"],
+            answer: 2,
+            explanation: "'ความขยัน' มาจากคำวิเศษณ์ 'ขยัน' ส่วนข้ออื่นมาจากคำกริยาทั้งหมด"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่างให้ถูกต้อง: ทุกคนต่างชื่นชมใน _____ กตัญญูของเด็กชายต้น",
+            choices: ["การ", "ความ", "สิ่ง", "ของ"],
+            answer: 1,
+            explanation: "'กตัญญู' เป็นคำวิเศษณ์บอกคุณลักษณะ จึงใช้คำว่า 'ความ' นำหน้า เป็น 'ความกตัญญู'"
+        },
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "ข้อใด 'ไม่ใช่' คำอาการนาม?",
+            choices: ["การพูด", "การฟัง", "การบ้าน", "การร้องเพลง"],
+            answer: 2,
+            explanation: "'การบ้าน' มีคำว่า 'การ' นำหน้าคำนาม 'บ้าน' จึงเป็นคำประสม ไม่ใช่อาการนาม!"
+        },
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "คำว่า 'ทำงาน' เมื่อเปลี่ยนเป็นอาการนามข้อใดถูกต้อง?",
+            choices: ["การทำงาน", "ความทำงาน", "ทำอาการงาน", "งานการทำ"],
+            answer: 0,
+            explanation: "'ทำงาน' เป็นคำกริยา เติม 'การ' ข้างหน้าได้อาการนามว่า 'การทำงาน'"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "คุณครูชมเชย _______ ของนักเรียนชั้น ป.4 ที่ช่วยกันเก็บขยะ",
+            choices: ["ความมีน้ำใจ", "การเก้าอี้", "ความสมุด", "การสนาม"],
+            answer: 0,
+            explanation: "'ความมีน้ำใจ' เป็นอาการนามที่บอกคุณลักษณะที่ดีงาม เหมาะกับประโยคนี้ที่สุด"
+        }
+    ],
+
+    // ==================== ด่านที่ 3: สนามทะเลสาบภาษาไทย (6 ข้อ) ====================
+    [
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "คำในข้อใดเป็นคำอาการนามทั้งหมด?",
+            choices: ["การเรียน, ความรัก", "การไฟฟ้า, การประปา", "การเมือง, การรถไฟ", "ความวัว, ความควาย"],
+            answer: 0,
+            explanation: "'การเรียน' (การ+กริยา) และ 'ความรัก' (ความ+กริยาทางใจ) เป็นอาการนามทั้งคู่ ส่วนข้ออื่นนำหน้าคำนาม"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่างให้ถูกต้อง: _____ คิดสร้างสรรค์ช่วยให้เราแก้ปัญหาได้",
+            choices: ["การ", "ความ", "เครื่อง", "ใบ"],
+            answer: 1,
+            explanation: "'คิด' เป็นคำกริยาที่เกิดในจิตใจ นิยมใช้คำว่า 'ความ' นำหน้า เป็น 'ความคิด'"
+        },
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "ข้อใดเกิดจาก 'ความ + คำวิเศษณ์'?",
+            choices: ["ความสะอาด", "การล้าง", "การกวาด", "การถูพื้น"],
+            answer: 0,
+            explanation: "'สะอาด' เป็นคำวิเศษณ์ เมื่อเติม 'ความ' จะเป็นอาการนาม 'ความสะอาด'"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดเป็นคำอาการนาม?",
+            choices: ["การว่ายน้ำ", "สระว่ายน้ำ", "ชุดว่ายน้ำ", "นักว่ายน้ำ"],
+            answer: 0,
+            explanation: "'การว่ายน้ำ' เกิดจาก 'การ' นำหน้าคำกริยา 'ว่ายน้ำ' จึงเป็นคำอาการนาม"
+        },
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "ข้อใด 'ไม่ใช่' อาการนาม แม้จะมีคำว่า 'การ' นำหน้า?",
+            choices: ["การเดินทาง", "การท่องเที่ยว", "การประปา", "การพักผ่อน"],
+            answer: 2,
+            explanation: "'การประปา' เป็นชื่อหน่วยงาน (การ + คำนาม) ไม่ได้เกิดจากคำกริยาหรือคำวิเศษณ์ จึงไม่ใช่อาการนาม"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "_______ ในห้องสมุดต้องงดใช้เสียงดังเพื่อไม่ให้รบกวนผู้อื่น",
+            choices: ["การอ่านหนังสือ", "ความหนังสือ", "การชั้นวาง", "ความบรรณารักษ์"],
+            answer: 0,
+            explanation: "'การอ่านหนังสือ' เป็นอาการนามที่บอกการกระทำในห้องสมุดได้อย่างถูกต้อง"
+        }
+    ],
+
+    // ==================== ด่านที่ 4: สวนดอกไม้แห่งคำกริยา (6 ข้อ) ====================
+    [
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "คำกริยา 'ปลูกต้นไม้' เมื่อสร้างเป็นอาการนามจะได้คำว่าอะไร?",
+            choices: ["การปลูกต้นไม้", "ความปลูกต้นไม้", "ต้นไม้การปลูก", "ปลูกความต้นไม้"],
+            answer: 0,
+            explanation: "การกระทำ 'ปลูกต้นไม้' เป็นคำกริยา จึงใช้ 'การ' นำหน้าเป็น 'การปลูกต้นไม้'"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่าง: _____ รักของพ่อแม่ยิ่งใหญ่เสมอ",
+            choices: ["การ", "ความ", "การความ", "ชาว"],
+            answer: 1,
+            explanation: "'รัก' เป็นกริยาแสดงความรู้สึกทางใจ จึงใช้คำว่า 'ความ' นำหน้าเป็น 'ความรัก'"
+        },
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "คำว่า 'สวยงาม' เป็นคำวิเศษณ์ เมื่อทำเป็นอาการนามข้อใดถูกต้อง?",
+            choices: ["การสวยงาม", "ความสวยงาม", "สวยงามการ", "สวยงามความ"],
+            answer: 1,
+            explanation: "คำวิเศษณ์ 'สวยงาม' ต้องใช้คำว่า 'ความ' นำหน้าเสมอ ได้เป็น 'ความสวยงาม'"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดเป็นคำอาการนาม?",
+            choices: ["การรดน้ำ", "บัวรดน้ำ", "สายยาง", "ดอกกุหลาบ"],
+            answer: 0,
+            explanation: "'การรดน้ำ' เกิดจากคำว่า 'การ' นำหน้าคำกริยา 'รดน้ำ'"
+        },
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "คำคู่ใด 'ไม่ใช่อาการนาม' ทั้งสองคำ?",
+            choices: ["การตลาด, การเงิน", "การเดิน, การวิ่ง", "ความดี, ความงาม", "การกิน, การนอน"],
+            answer: 0,
+            explanation: "'ตลาด' และ 'เงิน' เป็นคำนาม เมื่อเติม 'การ' จึงเป็นคำประสม ไม่ใช่อาการนาม"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "ดอกไม้ในสวนบานสะพรั่งแสดงถึง _______ ของธรรมชาติ",
+            choices: ["ความงดงาม", "การดอกไม้", "ความกระถาง", "การก้อนหิน"],
+            answer: 0,
+            explanation: "'ความงดงาม' เป็นอาการนามที่มาจากคำวิเศษณ์ 'งดงาม' เข้ากับประโยคได้อย่างลงตัว"
+        }
+    ],
+
+    // ==================== ด่านที่ 5: สนามกังหันลม (6 ข้อ) ====================
+    [
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่าง: _____ พยายามอยู่ที่ไหน _____ สำเร็จอยู่ที่นั่น",
+            choices: ["ความ, ความ", "การ, การ", "การ, ความ", "ความ, การ"],
+            answer: 0,
+            explanation: "สำนวนไทยที่ถูกต้องคือ 'ความพยายามอยู่ที่ไหน ความสำเร็จอยู่ที่นั่น' เป็นอาการนามทั้งสองคำ"
+        },
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "ข้อใดเกิดจาก 'การ + คำกริยา'?",
+            choices: ["การหมุน", "ความเร็ว", "ความแรง", "ความเย็น"],
+            answer: 0,
+            explanation: "'หมุน' เป็นคำกริยา เติม 'การ' ข้างหน้าได้ 'การหมุน' ส่วน เร็ว แรง เย็น เป็นคำวิเศษณ์"
+        },
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "ข้อใดเกิดจาก 'ความ + คำวิเศษณ์'?",
+            choices: ["ความฉลาด", "การคิดเลข", "การวาดภาพ", "การระบายสี"],
+            answer: 0,
+            explanation: "'ฉลาด' เป็นคำวิเศษณ์ เติม 'ความ' ข้างหน้าได้อาการนาม 'ความฉลาด'"
+        },
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "ข้อใด 'ไม่ใช่' คำอาการนาม?",
+            choices: ["ความสามัคคี", "ความซื่อสัตย์", "การรถไฟ", "ความเมตตา"],
+            answer: 2,
+            explanation: "'การรถไฟ' มีคำว่า 'รถไฟ' ซึ่งเป็นคำนามอยู่ข้างหลัง จึงไม่ใช่อาการนาม"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ในประโยค 'การออมเงินเป็นนิสัยที่ดี' คำใดเป็นอาการนาม?",
+            choices: ["การออมเงิน", "เป็น", "นิสัย", "ที่ดี"],
+            answer: 0,
+            explanation: "'การออมเงิน' เกิดจาก 'การ' + คำกริยา 'ออมเงิน' ทำหน้าที่เป็นประธานของประโยค"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "กังหันลมเปลี่ยนพลังงานลมให้เป็นการผลิตกระแสไฟฟ้าด้วย _______ ของใบพัด",
+            choices: ["การหมุน", "ความใบพัด", "การเสาเหล็ก", "ความก้อนเมฆ"],
+            answer: 0,
+            explanation: "'การหมุน' เป็นอาการนามที่บอกลักษณะการทำงานของใบพัดกังหันลม"
+        }
+    ],
+
+    // ==================== ด่านที่ 6: ภูเขาคำศัพท์ (6 ข้อ) ====================
+    [
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "คำวิเศษณ์ 'อดทน' เมื่อทำให้เป็นอาการนามข้อใดถูกต้อง?",
+            choices: ["ความอดทน", "การอดทน", "อดทนการ", "อดทนความ"],
+            answer: 0,
+            explanation: "'อดทน' เป็นคุณลักษณะทางจิตใจ จึงใช้ 'ความ' นำหน้าเป็น 'ความอดทน'"
+        },
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "คำกริยา 'ปีนเขา' เมื่อทำให้เป็นอาการนามควรเขียนอย่างไร?",
+            choices: ["การปีนเขา", "ความปีนเขา", "การภูเขา", "ความภูเขา"],
+            answer: 0,
+            explanation: "'ปีนเขา' เป็นคำกริยาแสดงการกระทำ จึงใช้ 'การ' นำหน้าเป็น 'การปีนเขา'"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่าง: เราต้องมี _____ ระมัดระวังในการเดินขึ้นที่สูง",
+            choices: ["การ", "ความ", "นัก", "ช่าง"],
+            answer: 1,
+            explanation: "'ระมัดระวัง' แสดงสภาวะทางสติและจิตใจ ใช้คำว่า 'ความ' นำหน้า เป็น 'ความระมัดระวัง'"
+        },
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "คำใดต่อไปนี้เป็น 'คำอาการนาม' จริงๆ?",
+            choices: ["การกีฬา", "การแข่งขัน", "การค้า", "การบัญชี"],
+            answer: 1,
+            explanation: "'การแข่งขัน' มาจากคำกริยา 'แข่งขัน' ส่วน กีฬา ค้า บัญชี ในบริบทนี้เป็นคำนาม"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดมีคำอาการนามอยู่ในประโยค?",
+            choices: ["ฉันชอบกินไอศกรีม", "น้องกำลังทำการบ้าน", "ความสามัคคีทำให้เกิดพลัง", "พ่อไปทำงานที่การไฟฟ้า"],
+            answer: 2,
+            explanation: "'ความสามัคคี' เป็นอาการนาม ส่วน 'การบ้าน' และ 'การไฟฟ้า' เป็นคำประสม"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "นักเดินทางต้องเตรียมร่างกายให้พร้อมสำหรับ _______ สู่ยอดเขา",
+            choices: ["การเดินทาง", "ความกระเป๋า", "การรองเท้า", "ความแผนที่"],
+            answer: 0,
+            explanation: "'การเดินทาง' เป็นอาการนามที่เกิดจาก 'การ + เดินทาง' เหมาะสมกับประโยคที่สุด"
+        }
+    ],
+
+    // ==================== ด่านที่ 7: สนามทรายมหัศจรรย์ (6 ข้อ) ====================
+    [
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่าง: _____ ร้อนจากแสงแดดทำให้น้ำในทะเลระเหยกลายเป็นไอ",
+            choices: ["การ", "ความ", "การความ", "ผู้"],
+            answer: 1,
+            explanation: "'ร้อน' เป็นคำวิเศษณ์บอกอุณหภูมิ ใช้ 'ความ' นำหน้า เป็น 'ความร้อน'"
+        },
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "อาการนามใดเกิดจากคำกริยา?",
+            choices: ["การขุดทราย", "ความแห้งแล้ง", "ความกว้างใหญ่", "ความสว่าง"],
+            answer: 0,
+            explanation: "'การขุดทราย' มาจากคำกริยา 'ขุดทราย' ส่วนข้ออื่นมาจากคำวิเศษณ์ทั้งหมด"
+        },
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "อาการนามใดเกิดจากคำวิเศษณ์?",
+            choices: ["การก่อปราสาท", "ความละเอียด", "การตักน้ำ", "การเดินเท้า"],
+            answer: 1,
+            explanation: "'ความละเอียด' มาจากคำวิเศษณ์ 'ละเอียด' จึงใช้ 'ความ' นำหน้า"
+        },
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "ข้อใด 'ไม่ใช่' คำอาการนาม?",
+            choices: ["การช่วยเหลือ", "การแบ่งปัน", "การประมง", "การเสียสละ"],
+            answer: 2,
+            explanation: "'การประมง' เป็นคำประสมที่หมายถึงอาชีพจับสัตว์น้ำ ไม่ใช่คำอาการนาม"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดเป็นคำอาการนามที่ถูกต้องตามหลักภาษาไทย?",
+            choices: ["ความดีใจ", "การดีใจ", "ความวิ่งเร็ว", "การสวยมาก"],
+            answer: 0,
+            explanation: "'ดีใจ' เป็นกริยาทางความรู้สึก ใช้ 'ความ' นำหน้าเป็น 'ความดีใจ'"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "เด็กๆ สนุกสนานกับ _______ ปราสาททรายริมชายหาด",
+            choices: ["การปั้น", "ความปราสาท", "การเปลือกหอย", "ความชายหาด"],
+            answer: 0,
+            explanation: "'การปั้น' เกิดจาก 'การ + ปั้น (คำกริยา)' ใช้ขยายความการทำปราสาททรายได้ถูกต้อง"
+        }
+    ],
+
+    // ==================== ด่านที่ 8: เกาะลอยฟ้า (6 ข้อ) ====================
+    [
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "คำว่า 'บิน' เป็นคำกริยา เมื่อทำให้เป็นอาการนามข้อใดถูกต้อง?",
+            choices: ["การบิน", "ความบิน", "เครื่องบิน", "นักบิน"],
+            answer: 0,
+            explanation: "'การบิน' เป็นคำอาการนาม ส่วน 'เครื่องบิน' และ 'นักบิน' เป็นคำนามทั่วไป"
+        },
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "คำว่า 'สูง' เป็นคำวิเศษณ์ เมื่อทำให้เป็นอาการนามข้อใดถูกต้อง?",
+            choices: ["การสูง", "ความสูง", "ที่สูง", "สูงสุด"],
+            answer: 1,
+            explanation: "'ความสูง' เกิดจาก 'ความ + สูง (คำวิเศษณ์)' เป็นอาการนามบอกระดับ"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่าง: เราควรฝึก _____ มีวินัยในตนเองตั้งแต่วัยเด็ก",
+            choices: ["การ", "ความ", "ชาว", "นัก"],
+            answer: 1,
+            explanation: "'มีวินัย' เป็นคุณลักษณะประจำตัว นิยมใช้คำว่า 'ความ' นำหน้าเป็น 'ความมีวินัย'"
+        },
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "คำในข้อใดจัดเป็น 'คำอาการนาม' ทุกคำ?",
+            choices: ["การพูด, ความคิด, การฟัง", "การบ้าน, การเมือง, การค้า", "ความสุข, การรถไฟ, ความดี", "การเรียน, การประปา, ความรัก"],
+            answer: 0,
+            explanation: "'การพูด' (การ+กริยา), 'ความคิด' (ความ+กริยาทางใจ), 'การฟัง' (การ+กริยา) เป็นอาการนามทั้ง 3 คำ"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดคือคำอาการนามของคำว่า 'ฝัน'?",
+            choices: ["ความฝัน", "การฝัน", "นักฝัน", "ช่างฝัน"],
+            answer: 0,
+            explanation: "'ฝัน' เป็นอาการทางจิตใจและสมอง ใช้คำว่า 'ความ' นำหน้าเป็น 'ความฝัน'"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "นกอินทรีกางปีกโผบินสู่ท้องฟ้าด้วย _______ และสง่างาม",
+            choices: ["ความคล่องแคล่ว", "การปีกนก", "ความก้อนเมฆ", "การสายลม"],
+            answer: 0,
+            explanation: "'ความคล่องแคล่ว' เกิดจาก 'ความ + คล่องแคล่ว (คำวิเศษณ์)' เหมาะสมกับรูปประโยค"
+        }
+    ],
+
+    // ==================== ด่านที่ 9: สนามปราสาทภาษาไทย (6 ข้อ) ====================
+    [
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดอธิบายลักษณะของ 'คำอาการนาม' ได้ถูกต้องที่สุด?",
+            choices: [
+                "คำว่า การ หรือ ความ นำหน้าคำกริยาหรือคำวิเศษณ์",
+                "คำว่า การ หรือ ความ นำหน้าคำนามทั่วไป",
+                "คำว่า นัก หรือ ผู้ นำหน้าคำกริยา",
+                "คำว่า ชาว หรือ หมอ นำหน้าคำนาม"
+            ],
+            answer: 0,
+            explanation: "หลักสำคัญของอาการนามคือ 'การ' หรือ 'ความ' ต้องนำหน้าคำกริยาหรือคำวิเศษณ์เท่านั้น"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำในช่องว่าง: _____ ซื่อสัตย์สุจริตเป็นสมบัติของคนดี",
+            choices: ["การ", "ความ", "การความ", "ของ"],
+            answer: 1,
+            explanation: "'ซื่อสัตย์สุจริต' เป็นคำวิเศษณ์บอกคุณธรรม ใช้ 'ความ' นำหน้าเป็น 'ความซื่อสัตย์สุจริต'"
+        },
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "ข้อใดสร้างจาก 'การ + คำกริยา'?",
+            choices: ["การปกป้อง", "ความกล้าหาญ", "ความยุติธรรม", "ความสงบ"],
+            answer: 0,
+            explanation: "'ปกป้อง' เป็นคำกริยาแสดงการกระทำ ใช้ 'การ' นำหน้าได้ 'การปกป้อง'"
+        },
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "ข้อใดสร้างจาก 'ความ + คำวิเศษณ์'?",
+            choices: ["ความยุติธรรม", "การตัดสิน", "การลงโทษ", "การตักเตือน"],
+            answer: 0,
+            explanation: "'ยุติธรรม' เป็นคำวิเศษณ์ เมื่อเติม 'ความ' จะได้อาการนาม 'ความยุติธรรม'"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "ประโยคใด 'ไม่มี' คำอาการนามอยู่เลย?",
+            choices: [
+                "ความเพียรนำมาซึ่งความสำเร็จ",
+                "การออกกำลังกายดีต่อสุขภาพ",
+                "คุณพ่อทำงานอยู่ที่การประปา",
+                "ความกตัญญูเป็นเครื่องหมายของคนดี"
+            ],
+            answer: 2,
+            explanation: "ในข้อ ค. คำว่า 'การประปา' เป็นคำประสม (ชื่อหน่วยงาน) ไม่ใช่อาการนาม ส่วนข้ออื่นมีอาการนามทั้งหมด"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "ชาวเมืองอยู่ร่วมกันอย่างมีความสุขเพราะมี _______ ต่อกัน",
+            choices: ["ความเอื้อเฟื้อเผื่อแผ่", "การกำแพงเมือง", "ความปราสาท", "การสะพานหิน"],
+            answer: 0,
+            explanation: "'ความเอื้อเฟื้อเผื่อแผ่' เป็นอาการนามที่แสดงความมีน้ำใจ เหมาะสมกับบริบทของประโยค"
+        }
+    ],
+
+    // ==================== ด่านที่ 10: สนามแชมป์เปี้ยนอาการนาม (6 ข้อ) ====================
+    [
+        {
+            type: "3. แยกคำที่เป็นอาการนาม",
+            prompt: "ข้อใดมีคำอาการนาม 'มากที่สุด'?",
+            choices: [
+                "การอ่าน การเขียน และความขยัน",
+                "การบ้าน การเมือง และการรถไฟ",
+                "ความวัว ความควาย และการไฟฟ้า",
+                "การประปา การตลาด และความฝัน"
+            ],
+            answer: 0,
+            explanation: "'การอ่าน', 'การเขียน' และ 'ความขยัน' เป็นคำอาการนามทั้ง 3 คำ!"
+        },
+        {
+            type: "2. เติมคำว่า การ หรือ ความ",
+            prompt: "เติมคำให้ถูกต้อง: _____ ตั้งใจเรียนและการทบทวนบทเรียนนำไปสู่ _____ รอบรู้",
+            choices: ["ความ, ความ", "การ, การ", "การ, ความ", "ความ, การ"],
+            answer: 0,
+            explanation: "'ความตั้งใจเรียน' และ 'ความรอบรู้' ใช้คำว่า 'ความ' นำหน้าทั้งคู่"
+        },
+        {
+            type: "4. เลือกคำที่สร้างจากคำกริยา",
+            prompt: "คำกริยา 'แข่งขัน' เมื่อทำให้เป็นอาการนามและใช้ในประโยค ข้อใดถูกต้อง?",
+            choices: [
+                "การแข่งขันกอล์ฟครั้งนี้สนุกมาก",
+                "ความแข่งขันกอล์ฟครั้งนี้สนุกมาก",
+                "นักแข่งขันกอล์ฟเป็นอาการนาม",
+                "สนามแข่งขันกอล์ฟเป็นอาการนาม"
+            ],
+            answer: 0,
+            explanation: "'การแข่งขัน' เกิดจาก 'การ + แข่งขัน (คำกริยา)' เป็นอาการนามที่ถูกต้อง"
+        },
+        {
+            type: "5. เลือกคำที่สร้างจากคำวิเศษณ์",
+            prompt: "ข้อใดเกิดจาก 'ความ + คำวิเศษณ์' ทั้งสองคำ?",
+            choices: [
+                "ความฉลาด, ความภาคภูมิใจ",
+                "การเดิน, การวิ่ง",
+                "การบ้าน, การเรือน",
+                "การกิน, ความนอน"
+            ],
+            answer: 0,
+            explanation: "'ความฉลาด' และ 'ความภาคภูมิใจ' ล้วนใช้คำว่า 'ความ' นำหน้าคำแสดงคุณลักษณะและอารมณ์"
+        },
+        {
+            type: "1. เลือกคำที่เป็นอาการนาม",
+            prompt: "หากต้องการเปลี่ยนคำว่า 'ชนะ' ให้เป็นอาการนาม ควรใช้คำใด?",
+            choices: ["ชัยชนะ หรือ ความชนะ", "การชนะ", "ผู้ชนะ", "ชนะเลิศ"],
+            answer: 1,
+            explanation: "'ชนะ' เป็นคำกริยา เมื่อเติม 'การ' ข้างหน้าจะได้คำอาการนามว่า 'การชนะ'"
+        },
+        {
+            type: "6. เลือกอาการนามให้เหมาะกับประโยค",
+            prompt: "ขอแสดงความยินดีใน _______ ของแชมป์เปี้ยนอาการนามคนเก่ง!",
+            choices: ["ความสำเร็จ", "การถ้วยรางวัล", "ความสนามกอล์ฟ", "การลูกกอล์ฟ"],
+            answer: 0,
+            explanation: "ยอดเยี่ยมมาก! 'ความสำเร็จ' คือคำอาการนามที่สมบูรณ์แบบสำหรับแชมป์เปี้ยนเช่นคุณ!"
+        }
+    ]
+];
+
+/**
+ * ============================================================================
+ * ข้อมูลสนามกอล์ฟทั้ง 10 ด่าน (เรขาคณิตสนาม + อุปสรรคที่แตกต่างกันในแต่ละด่าน)
+ * พิกัดอ้างอิงบน Virtual World ขนาด 1000 x 600 (Scale อัตโนมัติตามขนาดจอ)
+ * ============================================================================
+ */
+const LEVELS_DATA = [
+    {
+        id: 1,
+        name: "1. สนามฝึกหัดอาการนาม",
+        difficulty: "ง่าย",
+        diffClass: "diff-easy",
+        par: 3,
+        themeBg: "#22c55e",
+        fairwayColor: "#4ade80",
+        tee: { x: 160, y: 300 },
+        hole: { x: 820, y: 300, r: 22 },
+        obstacles: [
+            // กำแพงกั้นตรงกลางเล็กน้อยให้ฝึกเล็งโค้งหรือตีอ้อม
+            { type: "wall", x: 470, y: 210, w: 30, h: 110, color: "#94a3b8" }
+        ]
+    },
+    {
+        id: 2,
+        name: "2. ทุ่งหญ้าแห่งการสร้างคำ",
+        difficulty: "ง่าย",
+        diffClass: "diff-easy",
+        par: 3,
+        themeBg: "#16a34a",
+        fairwayColor: "#4ade80",
+        tee: { x: 150, y: 450 },
+        hole: { x: 830, y: 160, r: 22 },
+        obstacles: [
+            // บังเกอร์ทรายทำให้ลูกช้าลง
+            { type: "sand", x: 450, y: 300, rx: 85, ry: 55 },
+            { type: "wall", x: 340, y: 120, w: 30, h: 170, color: "#b45309" }
+        ]
+    },
+    {
+        id: 3,
+        name: "3. สนามทะเลสาบภาษาไทย",
+        difficulty: "ง่าย",
+        diffClass: "diff-easy",
+        par: 4,
+        themeBg: "#15803d",
+        fairwayColor: "#86efac",
+        tee: { x: 140, y: 300 },
+        hole: { x: 850, y: 300, r: 22 },
+        obstacles: [
+            // บ่อน้ำตรงกลาง + สะพานไม้ข้ามบ่อน้ำ
+            { type: "water", x: 390, y: 80, w: 190, h: 440 },
+            { type: "bridge", x: 380, y: 255, w: 210, h: 90 }
+        ]
+    },
+    {
+        id: 4,
+        name: "4. สวนดอกไม้แห่งคำกริยา",
+        difficulty: "ปานกลาง",
+        diffClass: "diff-med",
+        par: 4,
+        themeBg: "#16a34a",
+        fairwayColor: "#4ade80",
+        tee: { x: 140, y: 150 },
+        hole: { x: 850, y: 450, r: 22 },
+        obstacles: [
+            // แปลงดอกไม้ (กำแพงเด้ง) + บังเกอร์ทราย
+            { type: "wall", x: 320, y: 80, w: 36, h: 250, color: "#ec4899" },
+            { type: "wall", x: 600, y: 270, w: 36, h: 250, color: "#f43f5e" },
+            { type: "sand", x: 470, y: 300, rx: 65, ry: 65 }
+        ]
+    },
+    {
+        id: 5,
+        name: "5. สนามกังหันลม",
+        difficulty: "ปานกลาง",
+        diffClass: "diff-med",
+        par: 4,
+        themeBg: "#15803d",
+        fairwayColor: "#4ade80",
+        tee: { x: 150, y: 300 },
+        hole: { x: 840, y: 300, r: 22 },
+        obstacles: [
+            // กังหันลมหมุนขวางทางตรงกลาง
+            { type: "windmill", x: 490, y: 300, bladeLen: 145, bladeWidth: 18, speed: 0.022, angle: 0 },
+            { type: "sand", x: 700, y: 180, rx: 55, ry: 45 },
+            { type: "sand", x: 700, y: 420, rx: 55, ry: 45 }
+        ]
+    },
+    {
+        id: 6,
+        name: "6. ภูเขาคำศัพท์",
+        difficulty: "ปานกลาง",
+        diffClass: "diff-med",
+        par: 4,
+        themeBg: "#047857",
+        fairwayColor: "#34d399",
+        tee: { x: 140, y: 460 },
+        hole: { x: 840, y: 150, r: 21 },
+        obstacles: [
+            // เนินเขาลาดเอียงผลักลูกกอล์ฟ + แท่นกระโดดส่งลูก
+            { type: "slope", x: 340, y: 160, w: 280, h: 280, fx: -0.08, fy: 0.12 },
+            { type: "jumppad", x: 260, y: 310, r: 26, boostX: 11, boostY: -7 },
+            { type: "wall", x: 660, y: 80, w: 30, h: 180, color: "#64748b" }
+        ]
+    },
+    {
+        id: 7,
+        name: "7. สนามทรายมหัศจรรย์",
+        difficulty: "ปานกลาง",
+        diffClass: "diff-med",
+        par: 4,
+        themeBg: "#ca8a04",
+        fairwayColor: "#fde047",
+        tee: { x: 140, y: 300 },
+        hole: { x: 850, y: 300, r: 21 },
+        obstacles: [
+            // ทะเลทรายบังเกอร์ขนาดใหญ่ + อุโมงค์วาร์ปทางลัด
+            { type: "sand", x: 480, y: 300, rx: 190, ry: 150 },
+            { type: "tunnel", id: "A", x: 270, y: 140, r: 24, targetX: 690, targetY: 450, color: "#8b5cf6" },
+            { type: "tunnel", id: "B", x: 690, y: 450, r: 24, targetX: 270, targetY: 140, color: "#8b5cf6" }
+        ]
+    },
+    {
+        id: 8,
+        name: "8. เกาะลอยฟ้า",
+        difficulty: "ยาก",
+        diffClass: "diff-hard",
+        par: 5,
+        themeBg: "#0284c7",
+        fairwayColor: "#4ade80",
+        tee: { x: 140, y: 450 },
+        hole: { x: 850, y: 150, r: 21 },
+        obstacles: [
+            // บ่อน้ำรอบเกาะ + สะพาน + แท่นกระโดดข้ามฝั่ง
+            { type: "water", x: 350, y: 80, w: 140, h: 440 },
+            { type: "bridge", x: 340, y: 380, w: 160, h: 80 },
+            { type: "water", x: 610, y: 80, w: 130, h: 440 },
+            { type: "jumppad", x: 550, y: 240, r: 26, boostX: 12, boostY: -3 }
+        ]
+    },
+    {
+        id: 9,
+        name: "9. สนามปราสาทภาษาไทย",
+        difficulty: "ยาก",
+        diffClass: "diff-hard",
+        par: 5,
+        themeBg: "#15803d",
+        fairwayColor: "#86efac",
+        tee: { x: 130, y: 300 },
+        hole: { x: 860, y: 300, r: 20 },
+        obstacles: [
+            // กำแพงปราสาท + กังหันลมคู่ + บ่อน้ำหน้าปราสาท
+            { type: "wall", x: 330, y: 80, w: 30, h: 170, color: "#475569" },
+            { type: "wall", x: 330, y: 350, w: 30, h: 170, color: "#475569" },
+            { type: "windmill", x: 520, y: 300, bladeLen: 135, bladeWidth: 16, speed: -0.028, angle: 0.5 },
+            { type: "water", x: 680, y: 190, w: 60, h: 220 }
+        ]
+    },
+    {
+        id: 10,
+        name: "10. สนามแชมป์เปี้ยนอาการนาม",
+        difficulty: "ยากมาก",
+        diffClass: "diff-hard",
+        par: 5,
+        themeBg: "#065f46",
+        fairwayColor: "#4ade80",
+        tee: { x: 125, y: 470 },
+        hole: { x: 865, y: 140, r: 20 },
+        obstacles: [
+            // รวมทุกอุปสรรค: บ่อน้ำ + สะพาน + กังหัน + อุโมงค์ + ทราย
+            { type: "water", x: 300, y: 240, w: 150, h: 280 },
+            { type: "bridge", x: 290, y: 360, w: 170, h: 75 },
+            { type: "windmill", x: 540, y: 280, bladeLen: 130, bladeWidth: 16, speed: 0.03, angle: 0 },
+            { type: "sand", x: 730, y: 160, rx: 65, ry: 55 },
+            { type: "tunnel", id: "1", x: 210, y: 140, r: 22, targetX: 660, targetY: 440, color: "#f59e0b" },
+            { type: "tunnel", id: "2", x: 660, y: 440, r: 22, targetX: 210, targetY: 140, color: "#f59e0b" }
+        ]
+    }
+];
+
+/**
+ * ============================================================================
+ * ระบบบันทึกข้อมูลลง LocalStorage (Save State)
+ * ============================================================================
+ */
+const STORAGE_KEY = "grammar_golf_save_v1";
+let saveData = {
+    unlockedLevel: 1,
+    stars: {},      // เช่น { 1: 3, 2: 2 }
+    highScores: {}, // เช่น { 1: 1250 }
+    sound: { sfx: true, bgm: true, vol: 70 }
+};
+
+function loadSaveData() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            saveData = { ...saveData, ...parsed };
+        }
+    } catch (e) {
+        console.warn("ไม่สามารถอ่านข้อมูลบันทึกได้:", e);
+    }
+    sound.sfxEnabled = saveData.sound.sfx;
+    sound.bgmEnabled = saveData.sound.bgm;
+    sound.volume = saveData.sound.vol / 100;
+}
+
+function writeSaveData() {
+    try {
+        saveData.sound = {
+            sfx: sound.sfxEnabled,
+            bgm: sound.bgmEnabled,
+            vol: Math.round(sound.volume * 100)
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+    } catch (e) {
+        console.warn("ไม่สามารถบันทึกข้อมูลได้:", e);
+    }
+}
+
+function getTotalStars() {
+    return Object.values(saveData.stars).reduce((a, b) => a + b, 0);
+}
+
+/**
+ * ============================================================================
+ * ระบบจัดการหน้าจอและ UI
+ * ============================================================================
+ */
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    if (screenId === 'screen-menu') {
+        document.getElementById('menu-total-stars').textContent = `${getTotalStars()} / 30 ดาว`;
+    } else if (screenId === 'screen-levels') {
+        renderLevelsGrid();
+    }
+}
+
+function showToast(msg) {
+    const el = document.getElementById('toast-banner');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => el.classList.remove('show'), 2300);
+}
+
+function createStarSVG(filled, size = 22) {
+    const fill = filled ? "#f59e0b" : "#cbd5e1";
+    const stroke = filled ? "#b45309" : "#94a3b8";
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" stroke="${stroke}" stroke-width="1.5">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    </svg>`;
+}
+
+function renderLevelsGrid() {
+    const container = document.getElementById('levels-grid-container');
+    document.getElementById('levels-total-stars').textContent = `${getTotalStars()}/30`;
+    container.innerHTML = '';
+
+    LEVELS_DATA.forEach(lvl => {
+        const isUnlocked = lvl.id <= saveData.unlockedLevel;
+        const earnedStars = saveData.stars[lvl.id] || 0;
+
+        const card = document.createElement('div');
+        card.className = `level-card ${isUnlocked ? '' : 'locked'}`;
+
+        // สร้างภาพตัวอย่างสนามขนาดย่อด้วย SVG
+        let obsPreview = '';
+        lvl.obstacles.forEach(o => {
+            if (o.type === 'water') obsPreview += `<rect x="${o.x/10}" y="${o.y/10}" width="${o.w/10}" height="${o.h/10}" fill="#38bdf8"/>`;
+            if (o.type === 'sand') obsPreview += `<ellipse cx="${o.x/10}" cy="${o.y/10}" rx="${o.rx/10}" ry="${o.ry/10}" fill="#fde047"/>`;
+            if (o.type === 'wall') obsPreview += `<rect x="${o.x/10}" y="${o.y/10}" width="${o.w/10}" height="${o.h/10}" fill="${o.color}"/>`;
+            if (o.type === 'windmill') obsPreview += `<circle cx="${o.x/10}" cy="${o.y/10}" r="8" fill="#ef4444"/>`;
+        });
+
+        card.innerHTML = `
+            <div class="level-preview-box" style="background:${lvl.fairwayColor};">
+                <svg viewBox="0 0 100 60" width="100%" height="100%" preserveAspectRatio="none">
+                    ${obsPreview}
+                    <circle cx="${lvl.tee.x/10}" cy="${lvl.tee.y/10}" r="3.5" fill="#ffffff" stroke="#0f172a" stroke-width="1"/>
+                    <circle cx="${lvl.hole.x/10}" cy="${lvl.hole.y/10}" r="4" fill="#0f172a"/>
+                    <line x1="${lvl.hole.x/10}" y1="${lvl.hole.y/10}" x2="${lvl.hole.x/10}" y2="${lvl.hole.y/10 - 12}" stroke="#ffffff" stroke-width="1.5"/>
+                    <polygon points="${lvl.hole.x/10},${lvl.hole.y/10 - 12} ${lvl.hole.x/10 + 8},${lvl.hole.y/10 - 9} ${lvl.hole.x/10},${lvl.hole.y/10 - 6}" fill="#ef4444"/>
+                </svg>
+                <span class="level-num-pill">ด่าน ${lvl.id}</span>
+            </div>
+            <div class="level-name">${lvl.name.replace(/^\d+\.\s*/, '')}</div>
+            <span class="level-diff ${lvl.diffClass}">ระดับ: ${lvl.difficulty}</span>
+            <div class="level-stars">
+                ${isUnlocked
+                    ? [1, 2, 3].map(s => createStarSVG(s <= earnedStars, 18)).join('')
+                    : `<svg width="20" height="20" viewBox="0 0 24 24" fill="#64748b"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="#64748b" stroke-width="2.5"/></svg>`
+                }
+            </div>
+        `;
+
+        card.addEventListener('click', () => {
+            sound.playClick();
+            if (!isUnlocked) {
+                showToast(`ผ่านด่าน ${lvl.id - 1} เพื่อปลดล็อกสนามนี้!`);
+                return;
+            }
+            startLevel(lvl.id);
+        });
+
+        container.appendChild(card);
+    });
+}
+
+/**
+ * ============================================================================
+ * ระบบเกมกอล์ฟและฟิสิกส์ (Canvas 1000x600 Virtual Coordinate System)
+ * ============================================================================
+ */
+const canvas = document.getElementById('golf-canvas');
+const ctx = canvas.getContext('2d');
+
+const WORLD_W = 1000;
+const WORLD_H = 600;
+let renderScale = 1;
+let renderOffsetX = 0;
+let renderOffsetY = 0;
+
+let gameState = {
+    active: false,
+    paused: false,
+    levelId: 1,
+    levelConfig: null,
+    ball: { x: 160, y: 300, vx: 0, vy: 0, r: 10, moving: false, lastSafeX: 160, lastSafeY: 300 },
+    canSwing: false,
+    isDragging: false,
+    aimAngle: 0,
+    aimPower: 0.55, // 0.1 ถึง 1.0
+    strokes: 0,
+    score: 0,
+    streak: 0,
+    qIndex: 0,
+    qCorrect: 0,
+    qWrong: 0,
+    tunnelCooldown: 0,
+    swingAnimTimer: 0,
+    particles: []
+};
+
+function resizeCanvas() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // คำนวณอัตราส่วนให้สนาม 1000x600 พอดีกลางจอเสมอไม่ว่าจะแนวตั้งหรือแนวนอน
+    const padTop = 62;
+    const padBottom = 86;
+    const availW = rect.width - 20;
+    const availH = Math.max(200, rect.height - padTop - padBottom);
+    renderScale = Math.min(availW / WORLD_W, availH / WORLD_H);
+    renderOffsetX = (rect.width - WORLD_W * renderScale) / 2;
+    renderOffsetY = padTop + (availH - WORLD_H * renderScale) / 2;
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+function screenToWorld(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = clientX - rect.left;
+    const sy = clientY - rect.top;
+    return {
+        x: (sx - renderOffsetX) / renderScale,
+        y: (sy - renderOffsetY) / renderScale
+    };
+}
+
+function startLevel(levelId) {
+    const lvl = LEVELS_DATA.find(l => l.id === levelId) || LEVELS_DATA[0];
+    // คัดลอกอุปสรรคใหม่เพื่อให้มุมกังหันรีเซ็ต
+    const clonedObs = lvl.obstacles.map(o => ({ ...o }));
+
+    gameState = {
+        active: true,
+        paused: false,
+        levelId: lvl.id,
+        levelConfig: { ...lvl, obstacles: clonedObs },
+        ball: {
+            x: lvl.tee.x,
+            y: lvl.tee.y,
+            vx: 0,
+            vy: 0,
+            r: 10,
+            moving: false,
+            lastSafeX: lvl.tee.x,
+            lastSafeY: lvl.tee.y
+        },
+        canSwing: false,
+        isDragging: false,
+        aimAngle: Math.atan2(lvl.hole.y - lvl.tee.y, lvl.hole.x - lvl.tee.x),
+        aimPower: 0.55,
+        strokes: 0,
+        score: 0,
+        streak: 0,
+        qIndex: 0,
+        qCorrect: 0,
+        qWrong: 0,
+        tunnelCooldown: 0,
+        swingAnimTimer: 0,
+        particles: []
+    };
+
+    showScreen('screen-game');
+    resizeCanvas();
+    updateHUD();
+    updateControlPanelUI();
+    sound.startBGM();
+}
+
+function updateHUD() {
+    const lvl = gameState.levelConfig;
+    document.getElementById('hud-level-name').textContent = lvl.name;
+    document.getElementById('hud-strokes').textContent = gameState.strokes;
+    document.getElementById('hud-par').textContent = lvl.par;
+    document.getElementById('hud-q-count').textContent = `${Math.min(gameState.qIndex, 6)}/6`;
+    document.getElementById('hud-score').textContent = gameState.score;
+}
+
+function updateControlPanelUI() {
+    const btnQ = document.getElementById('btn-open-question');
+    const aimBox = document.getElementById('aim-controls-box');
+    const hint = document.getElementById('game-hint-text');
+
+    if (gameState.ball.moving) {
+        btnQ.style.display = 'none';
+        aimBox.style.display = 'none';
+        hint.textContent = 'ลูกกอล์ฟกำลังเคลื่อนที่... รอให้ลูกหยุดนิ่ง';
+    } else if (gameState.canSwing) {
+        btnQ.style.display = 'none';
+        aimBox.style.display = 'flex';
+        hint.textContent = 'ลากที่ลูกกอล์ฟเพื่อเล็งทิศทางและแรง แล้วกดปุ่ม SWING!';
+        updatePowerUI();
+    } else {
+        btnQ.style.display = 'inline-flex';
+        aimBox.style.display = 'none';
+        hint.textContent = 'ตอบคำถามเรื่อง "อาการนาม" ให้ถูกต้องเพื่อปลดล็อกการตี!';
+    }
+}
+
+function updatePowerUI() {
+    const pct = Math.round(gameState.aimPower * 100);
+    document.getElementById('power-pct-text').textContent = `${pct}%`;
+    document.getElementById('power-bar-fill').style.width = `${pct}%`;
+}
+
+/**
+ * ============================================================================
+ * ระบบคำถามในเกม (เชื่อมโยงกับการตีลูกกอล์ฟจริง)
+ * ============================================================================
+ */
+function openQuestionModal() {
+    if (gameState.ball.moving || gameState.canSwing) return;
+    sound.playClick();
+
+    const levelQuestions = QUESTION_BANK[gameState.levelId - 1];
+    // วนคำถาม 6 ข้อประจำด่าน (หากตีเกิน 6 ครั้งจะสุ่มทบทวนจากคลังด่านนั้น)
+    const qObj = levelQuestions[gameState.qIndex % levelQuestions.length];
+    const displayNum = (gameState.qIndex % 6) + 1;
+
+    document.getElementById('q-type-label').textContent = qObj.type;
+    document.getElementById('q-num-label').textContent = `ข้อที่ ${displayNum} / 6`;
+    document.getElementById('q-prompt-text').textContent = qObj.prompt;
+
+    const expBox = document.getElementById('q-exp-box');
+    expBox.className = 'q-explanation-box';
+
+    const choicesContainer = document.getElementById('q-choices-container');
+    choicesContainer.innerHTML = '';
+
+    const letters = ['ก', 'ข', 'ค', 'ง'];
+    qObj.choices.forEach((choiceText, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.innerHTML = `
+            <span class="choice-letter">${letters[idx]}</span>
+            <span>${choiceText}</span>
+        `;
+        btn.addEventListener('click', () => handleAnswerSelect(idx, qObj, choicesContainer));
+        choicesContainer.appendChild(btn);
+    });
+
+    document.getElementById('modal-question').classList.add('active');
+}
+
+function handleAnswerSelect(selectedIdx, qObj, container) {
+    const buttons = container.querySelectorAll('.choice-btn');
+    buttons.forEach(b => b.disabled = true);
+
+    const isCorrect = selectedIdx === qObj.answer;
+    buttons[selectedIdx].classList.add(isCorrect ? 'correct' : 'wrong');
+    if (!isCorrect) {
+        buttons[qObj.answer].classList.add('correct');
+    }
+
+    const expBox = document.getElementById('q-exp-box');
+    const expTitle = document.getElementById('q-exp-title');
+    const expText = document.getElementById('q-exp-text');
+
+    if (isCorrect) {
+        sound.playCorrect();
+        gameState.qCorrect++;
+        gameState.streak++;
+        let earned = 150;
+        let bonusMsg = "";
+        if (gameState.streak >= 2) {
+            earned += 50 * (gameState.streak - 1);
+            bonusMsg = ` (โบนัสตอบถูกต่อเนื่อง ${gameState.streak} ข้อ!)`;
+        }
+        if (gameState.qCorrect === 6) {
+            earned += 300;
+            bonusMsg += " + โบนัสตอบถูกครบ 6 ข้อ (+300)!";
+        }
+        gameState.score += earned;
+        gameState.qIndex++;
+        gameState.canSwing = true;
+
+        expBox.className = 'q-explanation-box show exp-correct';
+        expTitle.textContent = `ยอดเยี่ยม! ตอบถูกต้อง (+${earned} คะแนน)${bonusMsg}`;
+        expText.textContent = qObj.explanation;
+    } else {
+        sound.playWrong();
+        gameState.qWrong++;
+        gameState.streak = 0;
+        gameState.canSwing = false;
+
+        expBox.className = 'q-explanation-box show exp-wrong';
+        expTitle.textContent = 'ยังไม่ถูกต้อง ลองอ่านคำอธิบายแล้วตอบใหม่อีกครั้งนะ!';
+        expText.textContent = qObj.explanation;
+    }
+
+    updateHUD();
+}
+
+document.getElementById('btn-q-continue').addEventListener('click', () => {
+    sound.playClick();
+    document.getElementById('modal-question').classList.remove('active');
+    updateControlPanelUI();
+    if (gameState.canSwing) {
+        showToast('ปลดล็อกไม้กอล์ฟแล้ว! เล็งทิศทางแล้วกด SWING');
+    }
+});
+
+/**
+ * ============================================================================
+ * ระบบควบคุมการเล็งและตีลูกกอล์ฟ (Mouse + Touch)
+ * ============================================================================
+ */
+function handlePointerDown(e) {
+    if (!gameState.active || gameState.paused || !gameState.canSwing || gameState.ball.moving) return;
+    const pt = e.touches ? e.touches[0] : e;
+    const world = screenToWorld(pt.clientX, pt.clientY);
+    const dist = Math.hypot(world.x - gameState.ball.x, world.y - gameState.ball.y);
+
+    // แตะใกล้ลูกกอล์ฟหรือพื้นที่สนามเพื่อลากกำหนดทิศทางและแรง
+    if (dist <= 140) {
+        gameState.isDragging = true;
+        updateAimFromPointer(world);
+    }
+}
+
+function handlePointerMove(e) {
+    if (!gameState.isDragging) return;
+    if (e.cancelable) e.preventDefault();
+    const pt = e.touches ? e.touches[0] : e;
+    const world = screenToWorld(pt.clientX, pt.clientY);
+    updateAimFromPointer(world);
+}
+
+function handlePointerUp() {
+    gameState.isDragging = false;
+}
+
+function updateAimFromPointer(world) {
+    const dx = world.x - gameState.ball.x;
+    const dy = world.y - gameState.ball.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist > 8) {
+        // ทิศทางตามนิ้ว/เมาส์ที่ลากไปหาเป้าหมาย
+        gameState.aimAngle = Math.atan2(dy, dx);
+        gameState.aimPower = Math.min(Math.max(dist / 180, 0.15), 1.0);
+        updatePowerUI();
+    }
+}
+
+canvas.addEventListener('mousedown', handlePointerDown);
+window.addEventListener('mousemove', handlePointerMove);
+window.addEventListener('mouseup', handlePointerUp);
+
+canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
+window.addEventListener('touchmove', handlePointerMove, { passive: false });
+window.addEventListener('touchend', handlePointerUp);
+
+function executeSwing() {
+    if (!gameState.canSwing || gameState.ball.moving) return;
+    sound.playSwing();
+
+    gameState.ball.lastSafeX = gameState.ball.x;
+    gameState.ball.lastSafeY = gameState.ball.y;
+
+    const maxSpeed = 16.5;
+    const speed = gameState.aimPower * maxSpeed;
+    gameState.ball.vx = Math.cos(gameState.aimAngle) * speed;
+    gameState.ball.vy = Math.sin(gameState.aimAngle) * speed;
+    gameState.ball.moving = true;
+    gameState.canSwing = false;
+    gameState.strokes++;
+    gameState.swingAnimTimer = 18;
+
+    spawnParticles(gameState.ball.x, gameState.ball.y, '#ffffff', 10);
+    updateHUD();
+    updateControlPanelUI();
+}
+
+document.getElementById('btn-swing').addEventListener('click', executeSwing);
+document.getElementById('btn-open-question').addEventListener('click', openQuestionModal);
+
+/**
+ * ============================================================================
+ * ระบบฟิสิกส์การเคลื่อนที่ การชนสิ่งกีดขวาง และการลงหลุม
+ * ============================================================================
+ */
+function spawnParticles(x, y, color, count = 12) {
+    for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const s = 1 + Math.random() * 4;
+        gameState.particles.push({
+            x, y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s,
+            life: 24 + Math.random() * 14,
+            color
+        });
+    }
+}
+
+function updatePhysics() {
+    if (!gameState.active || gameState.paused) return;
+
+    const lvl = gameState.levelConfig;
+    const b = gameState.ball;
+
+    if (gameState.swingAnimTimer > 0) gameState.swingAnimTimer--;
+    if (gameState.tunnelCooldown > 0) gameState.tunnelCooldown--;
+
+    // อัปเดตการหมุนของกังหันลมตลอดเวลา
+    lvl.obstacles.forEach(obs => {
+        if (obs.type === 'windmill') {
+            obs.angle += obs.speed;
+        }
+    });
+
+    // อัปเดตอนุภาคเอฟเฟกต์
+    for (let i = gameState.particles.length - 1; i >= 0; i--) {
+        const p = gameState.particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        if (p.life <= 0) gameState.particles.splice(i, 1);
+    }
+
+    if (!b.moving) return;
+
+    // เคลื่อนที่ตามความเร็ว
+    b.x += b.vx;
+    b.y += b.vy;
+
+    // ชนขอบสนามหญ้า (Padding 60px รอบขอบ)
+    const minX = 65 + b.r, maxX = WORLD_W - 65 - b.r;
+    const minY = 65 + b.r, maxY = WORLD_H - 65 - b.r;
+
+    if (b.x < minX) { b.x = minX; b.vx = Math.abs(b.vx) * 0.8; sound.playBounce(); }
+    if (b.x > maxX) { b.x = maxX; b.vx = -Math.abs(b.vx) * 0.8; sound.playBounce(); }
+    if (b.y < minY) { b.y = minY; b.vy = Math.abs(b.vy) * 0.8; sound.playBounce(); }
+    if (b.y > maxY) { b.y = maxY; b.vy = -Math.abs(b.vy) * 0.8; sound.playBounce(); }
+
+    let friction = 0.982; // แรงเสียดทานปกติบนพื้นหญ้า
+    let onBridge = false;
+    let inWater = false;
+
+    // ตรวจสอบสะพานก่อน (ถ้าอยู่บนสะพานจะไม่ตกน้ำ)
+    lvl.obstacles.forEach(obs => {
+        if (obs.type === 'bridge') {
+            if (b.x >= obs.x && b.x <= obs.x + obs.w && b.y >= obs.y && b.y <= obs.y + obs.h) {
+                onBridge = true;
+            }
+        }
+    });
+
+    // ตรวจสอบอุปสรรคทั้งหมด
+    for (const obs of lvl.obstacles) {
+        if (obs.type === 'wall') {
+            // ตรวจการชนสี่เหลี่ยม (AABB vs Circle)
+            const closestX = Math.max(obs.x, Math.min(b.x, obs.x + obs.w));
+            const closestY = Math.max(obs.y, Math.min(b.y, obs.y + obs.h));
+            const dx = b.x - closestX;
+            const dy = b.y - closestY;
+            const distSq = dx * dx + dy * dy;
+
+            if (distSq < b.r * b.r) {
+                const dist = Math.sqrt(distSq) || 0.01;
+                const nx = dx / dist;
+                const ny = dy / dist;
+                b.x = closestX + nx * (b.r + 1);
+                b.y = closestY + ny * (b.r + 1);
+                const dot = b.vx * nx + b.vy * ny;
+                b.vx = (b.vx - 2 * dot * nx) * 0.82;
+                b.vy = (b.vy - 2 * dot * ny) * 0.82;
+                sound.playBounce();
+                spawnParticles(closestX, closestY, '#fde047', 6);
+            }
+        } else if (obs.type === 'sand') {
+            // บังเกอร์ทราย: เพิ่มแรงเสียดทานให้ลูกช้าลงมาก
+            const normX = (b.x - obs.x) / obs.rx;
+            const normY = (b.y - obs.y) / obs.ry;
+            if (normX * normX + normY * normY <= 1) {
+                friction = 0.91;
+            }
+        } else if (obs.type === 'water' && !onBridge) {
+            if (b.x >= obs.x && b.x <= obs.x + obs.w && b.y >= obs.y && b.y <= obs.y + obs.h) {
+                inWater = true;
+            }
+        } else if (obs.type === 'slope') {
+            // เนินเขาลาดเอียง: ออกแรงผลักลูกกอล์ฟ
+            if (b.x >= obs.x && b.x <= obs.x + obs.w && b.y >= obs.y && b.y <= obs.y + obs.h) {
+                b.vx += obs.fx;
+                b.vy += obs.fy;
+            }
+        } else if (obs.type === 'jumppad') {
+            const dist = Math.hypot(b.x - obs.x, b.y - obs.y);
+            if (dist < obs.r + b.r) {
+                b.vx = obs.boostX;
+                b.vy = obs.boostY;
+                sound.playJump();
+                spawnParticles(obs.x, obs.y, '#38bdf8', 14);
+                showToast('แท่นกระโดดส่งพลัง!');
+            }
+        } else if (obs.type === 'tunnel' && gameState.tunnelCooldown <= 0) {
+            const dist = Math.hypot(b.x - obs.x, b.y - obs.y);
+            if (dist < obs.r) {
+                b.x = obs.targetX;
+                b.y = obs.targetY;
+                gameState.tunnelCooldown = 45;
+                sound.playJump();
+                spawnParticles(b.x, b.y, obs.color, 16);
+                showToast('วาร์ปผ่านอุโมงค์ทางลัด!');
+            }
+        } else if (obs.type === 'windmill') {
+            // ใบพัดกังหันลม 2 แฉกตัดกัน
+            for (let k = 0; k < 2; k++) {
+                const ang = obs.angle + (k * Math.PI / 2);
+                const cos = Math.cos(-ang);
+                const sin = Math.sin(-ang);
+                const rx = (b.x - obs.x) * cos - (b.y - obs.y) * sin;
+                const ry = (b.x - obs.x) * sin + (b.y - obs.y) * cos;
+
+                const halfL = obs.bladeLen;
+                const halfW = obs.bladeWidth / 2;
+                const cx = Math.max(-halfL, Math.min(rx, halfL));
+                const cy = Math.max(-halfW, Math.min(ry, halfW));
+                const ddx = rx - cx;
+                const ddy = ry - cy;
+
+                if (ddx * ddx + ddy * ddy < b.r * b.r) {
+                    // สะท้อนออกในระบบพิกัดหมุน
+                    const dist = Math.hypot(ddx, ddy) || 0.01;
+                    const lnx = ddx / dist;
+                    const lny = ddy / dist;
+                    const wnx = lnx * Math.cos(ang) - lny * Math.sin(ang);
+                    const wny = lnx * Math.sin(ang) + lny * Math.cos(ang);
+                    b.x += wnx * (b.r - dist + 3);
+                    b.y += wny * (b.r - dist + 3);
+                    b.vx = wnx * 7.5;
+                    b.vy = wny * 7.5;
+                    sound.playBounce();
+                }
+            }
+        }
+    }
+
+    // หากลูกตกบ่อน้ำ: กลับไปจุดตีล่าสุด
+    if (inWater) {
+        sound.playSplash();
+        spawnParticles(b.x, b.y, '#38bdf8', 18);
+        b.x = b.lastSafeX;
+        b.y = b.lastSafeY;
+        b.vx = 0;
+        b.vy = 0;
+        b.moving = false;
+        showToast('ลูกกอล์ฟตกน้ำ! กลับมาเริ่มตีที่จุดเดิม');
+        updateControlPanelUI();
+        return;
+    }
+
+    // ตรวจจับลูกกอล์ฟลงหลุม
+    const hole = lvl.hole;
+    const distToHole = Math.hypot(b.x - hole.x, b.y - hole.y);
+    const currentSpeed = Math.hypot(b.vx, b.vy);
+
+    if (distToHole < hole.r - 2) {
+        if (currentSpeed < 12.5) {
+            // ลงหลุมสำเร็จ!
+            b.x = hole.x;
+            b.y = hole.y;
+            b.vx = 0;
+            b.vy = 0;
+            b.moving = false;
+            sound.playHoleIn();
+            spawnParticles(hole.x, hole.y, '#fbbf24', 28);
+            setTimeout(() => completeLevel(), 650);
+            return;
+        } else {
+            // แรงเกินไป ลูกกระเด้งข้ามปากหลุม
+            b.vx *= 0.75;
+            b.vy *= 0.75;
+        }
+    }
+
+    // ใช้แรงเสียดทานและหยุดลูกเมื่อช้ามาก
+    b.vx *= friction;
+    b.vy *= friction;
+
+    if (Math.hypot(b.vx, b.vy) < 0.14) {
+        b.vx = 0;
+        b.vy = 0;
+        b.moving = false;
+        updateControlPanelUI();
+    }
+}
+
+/**
+ * ============================================================================
+ * ระบบวาดกราฟิกสนามกอล์ฟ 2.5D Cartoon บน Canvas
+ * ============================================================================
+ */
+function renderCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    if (!gameState.levelConfig) return;
+    const lvl = gameState.levelConfig;
+
+    // พื้นหลังท้องฟ้าและหญ้ารอบสนาม
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, rect.height);
+    bgGrad.addColorStop(0, '#38bdf8');
+    bgGrad.addColorStop(0.35, '#bae6fd');
+    bgGrad.addColorStop(0.36, '#15803d');
+    bgGrad.addColorStop(1, '#14532d');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, rect.width, rect.height);
+
+    ctx.save();
+    ctx.translate(renderOffsetX, renderOffsetY);
+    ctx.scale(renderScale, renderScale);
+
+    // 1. เงาขอบสนามกอล์ฟ 2.5D
+    ctx.fillStyle = '#064e3b';
+    roundRect(ctx, 45, 52, WORLD_W - 90, WORLD_H - 90, 36);
+    ctx.fill();
+
+    // 2. ขอบหญ้าเข้มรอบสนาม
+    ctx.fillStyle = lvl.themeBg;
+    roundRect(ctx, 45, 42, WORLD_W - 90, WORLD_H - 90, 36);
+    ctx.fill();
+
+    // 3. พื้นแฟร์เวย์สีเขียวสด
+    ctx.fillStyle = lvl.fairwayColor;
+    roundRect(ctx, 65, 62, WORLD_W - 130, WORLD_H - 130, 26);
+    ctx.fill();
+
+    // ลายตารางหญ้าสลับสีอ่อนเข้มสวยงาม
+    ctx.save();
+    roundRect(ctx, 65, 62, WORLD_W - 130, WORLD_H - 130, 26);
+    ctx.clip();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    for (let x = 65; x < WORLD_W - 65; x += 60) {
+        if ((x / 60) % 2 === 0) {
+            ctx.fillRect(x, 62, 60, WORLD_H - 130);
+        }
+    }
+    ctx.restore();
+
+    // 4. วาดอุปสรรคพื้นสนาม (ทราย, บ่อน้ำ, เนินเขา, สะพาน, อุโมงค์, แท่นกระโดด)
+    lvl.obstacles.forEach(obs => {
+        if (obs.type === 'sand') {
+            ctx.fillStyle = '#d97706';
+            ctx.beginPath();
+            ctx.ellipse(obs.x, obs.y + 4, obs.rx, obs.ry, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.ellipse(obs.x, obs.y, obs.rx, obs.ry, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (obs.type === 'water') {
+            ctx.fillStyle = '#0284c7';
+            roundRect(ctx, obs.x, obs.y, obs.w, obs.h, 16);
+            ctx.fill();
+            ctx.fillStyle = '#38bdf8';
+            roundRect(ctx, obs.x + 4, obs.y + 4, obs.w - 8, obs.h - 8, 12);
+            ctx.fill();
+            // คลื่นน้ำ
+            ctx.strokeStyle = '#bae6fd';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(obs.x + 20, obs.y + obs.h * 0.35);
+            ctx.quadraticCurveTo(obs.x + obs.w * 0.5, obs.y + obs.h * 0.3, obs.x + obs.w - 20, obs.y + obs.h * 0.35);
+            ctx.stroke();
+        } else if (obs.type === 'slope') {
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.35)';
+            roundRect(ctx, obs.x, obs.y, obs.w, obs.h, 16);
+            ctx.fill();
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // ลูกศรบอกทิศทางความลาดเอียง
+            ctx.fillStyle = '#065f46';
+            ctx.font = 'bold 18px Sarabun';
+            ctx.fillText('เนินลาด ↙', obs.x + obs.w / 2 - 35, obs.y + obs.h / 2);
+        } else if (obs.type === 'jumppad') {
+            ctx.fillStyle = '#1d4ed8';
+            ctx.beginPath();
+            ctx.arc(obs.x, obs.y + 3, obs.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#60a5fa';
+            ctx.beginPath();
+            ctx.arc(obs.x, obs.y, obs.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(obs.x - 8, obs.y + 4);
+            ctx.lineTo(obs.x, obs.y - 6);
+            ctx.lineTo(obs.x + 8, obs.y + 4);
+            ctx.stroke();
+        } else if (obs.type === 'tunnel') {
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(obs.x, obs.y, obs.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = obs.color;
+            ctx.lineWidth = 5;
+            ctx.stroke();
+        }
+    });
+
+    // วาดสะพานไม้ทับบนบ่อน้ำ
+    lvl.obstacles.forEach(obs => {
+        if (obs.type === 'bridge') {
+            ctx.fillStyle = '#78350f';
+            roundRect(ctx, obs.x, obs.y + 4, obs.w, obs.h, 8);
+            ctx.fill();
+            ctx.fillStyle = '#b45309';
+            roundRect(ctx, obs.x, obs.y, obs.w, obs.h, 8);
+            ctx.fill();
+            // แผ่นไม้สะพาน
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 2;
+            for (let bx = obs.x + 15; bx < obs.x + obs.w; bx += 18) {
+                ctx.beginPath();
+                ctx.moveTo(bx, obs.y);
+                ctx.lineTo(bx, obs.y + obs.h);
+                ctx.stroke();
+            }
+        }
+    });
+
+    // 5. วาดจุดตั้งลูก (Tee) และหลุมกอล์ฟ + ธง
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.beginPath();
+    ctx.arc(lvl.tee.x, lvl.tee.y, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // หลุมกอล์ฟ
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.arc(lvl.hole.x, lvl.hole.y, lvl.hole.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // ธงกอล์ฟ
+    ctx.strokeStyle = '#f8fafc';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(lvl.hole.x, lvl.hole.y);
+    ctx.lineTo(lvl.hole.x, lvl.hole.y - 68);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.moveTo(lvl.hole.x, lvl.hole.y - 68);
+    ctx.lineTo(lvl.hole.x + 36, lvl.hole.y - 54);
+    ctx.lineTo(lvl.hole.x, lvl.hole.y - 40);
+    ctx.closePath();
+    ctx.fill();
+
+    // 6. วาดกำแพงและกังหันลม (สิ่งกีดขวางแนวตั้ง)
+    lvl.obstacles.forEach(obs => {
+        if (obs.type === 'wall') {
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            roundRect(ctx, obs.x + 5, obs.y + 7, obs.w, obs.h, 8);
+            ctx.fill();
+            ctx.fillStyle = obs.color;
+            roundRect(ctx, obs.x, obs.y, obs.w, obs.h, 8);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        } else if (obs.type === 'windmill') {
+            ctx.save();
+            ctx.translate(obs.x, obs.y);
+            ctx.rotate(obs.angle);
+            ctx.fillStyle = '#f59e0b';
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 2;
+            roundRect(ctx, -obs.bladeLen, -obs.bladeWidth / 2, obs.bladeLen * 2, obs.bladeWidth, 6);
+            ctx.fill();
+            ctx.stroke();
+            roundRect(ctx, -obs.bladeWidth / 2, -obs.bladeLen, obs.bladeWidth, obs.bladeLen * 2, 6);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // แกนกลางกังหัน
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(obs.x, obs.y, 14, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+        }
+    });
+
+    // 7. เส้นเล็งทิศทางและแรงตี (แสดงเมื่อปลดล็อกการตีและลูกหยุดนิ่ง)
+    const b = gameState.ball;
+    if (gameState.canSwing && !b.moving) {
+        const lineLen = 50 + gameState.aimPower * 130;
+        const endX = b.x + Math.cos(gameState.aimAngle) * lineLen;
+        const endY = b.y + Math.sin(gameState.aimAngle) * lineLen;
+
+        // วงกลมรัศมีสัมผัส
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 32, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // ลูกศรบอกทิศทาง
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // หัวลูกศร
+        const headLen = 16;
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - headLen * Math.cos(gameState.aimAngle - 0.45), endY - headLen * Math.sin(gameState.aimAngle - 0.45));
+        ctx.lineTo(endX - headLen * Math.cos(gameState.aimAngle + 0.45), endY - headLen * Math.sin(gameState.aimAngle + 0.45));
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // 8. วาดตัวละครนักกอล์ฟตัวน้อยข้างลูกกอล์ฟ (เมื่อลูกหยุดนิ่ง)
+    if (!b.moving) {
+        drawGolferCharacter(ctx, b.x - 24, b.y - 14, gameState.swingAnimTimer > 0);
+    }
+
+    // 9. วาดลูกกอล์ฟ
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.arc(b.x + 2, b.y + 4, b.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 10. วาดเอฟเฟกต์อนุภาค
+    gameState.particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.life / 30);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    // 11. ตกแต่งต้นไม้และดอกไม้รอบขอบสนาม
+    drawEdgeDecorations(ctx);
+
+    ctx.restore();
+}
+
+function drawGolferCharacter(c, x, y, swinging) {
+    c.save();
+    c.translate(x, y);
+    // ตัวเสื้อเขียว
+    c.fillStyle = '#10b981';
+    c.beginPath();
+    c.roundRect(-9, -12, 18, 20, 6);
+    c.fill();
+    // หัว
+    c.fillStyle = '#fde68a';
+    c.beginPath();
+    c.arc(0, -20, 10, 0, Math.PI * 2);
+    c.fill();
+    // หมวกแก๊ปเหลือง
+    c.fillStyle = '#f59e0b';
+    c.beginPath();
+    c.arc(0, -23, 10, Math.PI, 0);
+    c.fill();
+    c.fillRect(-2, -24, 15, 3);
+    // ไม้กอล์ฟ
+    c.strokeStyle = '#e2e8f0';
+    c.lineWidth = 3;
+    c.beginPath();
+    c.moveTo(6, -4);
+    c.lineTo(swinging ? 26 : 16, swinging ? -18 : 14);
+    c.stroke();
+    c.restore();
+}
+
+function drawEdgeDecorations(c) {
+    const trees = [
+        { x: 40, y: 45 }, { x: 960, y: 45 },
+        { x: 40, y: 555 }, { x: 960, y: 555 }
+    ];
+    trees.forEach(t => {
+        c.fillStyle = '#166534';
+        c.beginPath();
+        c.arc(t.x, t.y, 24, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = '#22c55e';
+        c.beginPath();
+        c.arc(t.x - 4, t.y - 4, 18, 0, Math.PI * 2);
+        c.fill();
+    });
+}
+
+function roundRect(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+}
+
+// Game Loop หลัก 60 FPS
+function gameLoop() {
+    updatePhysics();
+    renderCanvas();
+    requestAnimationFrame(gameLoop);
+}
+
+/**
+ * ============================================================================
+ * จบด่าน คำนวณดาว และหน้าสรุปผล
+ * ============================================================================
+ */
+function completeLevel() {
+    gameState.active = false;
+    sound.playWin();
+
+    const lvl = gameState.levelConfig;
+    // คำนวณโบนัสการตี
+    const strokeDiff = Math.max(0, (lvl.par + 2) - gameState.strokes);
+    const strokeBonus = strokeDiff * 150;
+    const finalScore = gameState.score + strokeBonus;
+
+    // เกณฑ์ดาว 3 ระดับ
+    let stars = 1;
+    if (gameState.strokes <= lvl.par && gameState.qWrong === 0) {
+        stars = 3;
+    } else if (gameState.strokes <= lvl.par + 2 && gameState.qCorrect >= 2) {
+        stars = 2;
+    }
+
+    // บันทึกสถิติสูงสุดลง LocalStorage
+    const prevStars = saveData.stars[lvl.id] || 0;
+    if (stars > prevStars) saveData.stars[lvl.id] = stars;
+
+    const prevScore = saveData.highScores[lvl.id] || 0;
+    if (finalScore > prevScore) saveData.highScores[lvl.id] = finalScore;
+
+    if (lvl.id < 10 && saveData.unlockedLevel <= lvl.id) {
+        saveData.unlockedLevel = lvl.id + 1;
+    }
+    writeSaveData();
+
+    // อัปเดตหน้าสรุปผล
+    document.getElementById('sum-title').textContent =
+        stars === 3 ? "สุดยอดแชมป์เปี้ยน! คว้า 3 ดาวเต็ม!" :
+        stars === 2 ? "ยอดเยี่ยมมาก! ผ่านสนามสำเร็จ" : "ผ่านสนามสำเร็จแล้ว!";
+    document.getElementById('sum-subtitle').textContent = lvl.name;
+    document.getElementById('sum-stars-container').innerHTML =
+        [1, 2, 3].map(s => createStarSVG(s <= stars, 44)).join('');
+    document.getElementById('sum-score').textContent = finalScore;
+    document.getElementById('sum-strokes').textContent = `${gameState.strokes} ครั้ง (Par ${lvl.par})`;
+    document.getElementById('sum-correct').textContent = `${gameState.qCorrect} ข้อ`;
+    document.getElementById('sum-wrong').textContent = `${gameState.qWrong} ข้อ`;
+
+    const btnNext = document.getElementById('btn-sum-next');
+    btnNext.style.display = lvl.id < 10 ? 'inline-flex' : 'none';
+
+    showScreen('screen-summary');
+}
+
+/**
+ * ============================================================================
+ * เชื่อมโยงปุ่มทั้งหมดในเกม
+ * ============================================================================
+ */
+document.getElementById('btn-start-play').addEventListener('click', () => {
+    sound.playClick();
+    startLevel(saveData.unlockedLevel || 1);
+});
+
+document.getElementById('btn-select-level').addEventListener('click', () => {
+    sound.playClick();
+    showScreen('screen-levels');
+});
+
+document.getElementById('btn-levels-back').addEventListener('click', () => {
+    sound.playClick();
+    showScreen('screen-menu');
+});
+
+document.getElementById('btn-howto').addEventListener('click', () => {
+    sound.playClick();
+    showScreen('screen-howto');
+});
+
+document.getElementById('btn-howto-close').addEventListener('click', () => {
+    sound.playClick();
+    showScreen('screen-menu');
+});
+
+// ปุ่มในหน้าแข่งขัน
+document.getElementById('btn-game-menu').addEventListener('click', () => {
+    sound.playClick();
+    gameState.active = false;
+    showScreen('screen-levels');
+});
+
+document.getElementById('btn-pause-game').addEventListener('click', () => {
+    sound.playClick();
+    gameState.paused = true;
+    document.getElementById('modal-pause').classList.add('active');
+});
+
+document.getElementById('btn-resume').addEventListener('click', () => {
+    sound.playClick();
+    gameState.paused = false;
+    document.getElementById('modal-pause').classList.remove('active');
+});
+
+document.getElementById('btn-restart-level').addEventListener('click', () => {
+    sound.playClick();
+    document.getElementById('modal-pause').classList.remove('active');
+    startLevel(gameState.levelId);
+});
+
+document.getElementById('btn-pause-quit').addEventListener('click', () => {
+    sound.playClick();
+    document.getElementById('modal-pause').classList.remove('active');
+    gameState.active = false;
+    showScreen('screen-levels');
+});
+
+// ปุ่มหน้าสรุปผล
+document.getElementById('btn-sum-levels').addEventListener('click', () => {
+    sound.playClick();
+    showScreen('screen-levels');
+});
+
+document.getElementById('btn-sum-retry').addEventListener('click', () => {
+    sound.playClick();
+    startLevel(gameState.levelId);
+});
+
+document.getElementById('btn-sum-next').addEventListener('click', () => {
+    sound.playClick();
+    if (gameState.levelId < 10) {
+        startLevel(gameState.levelId + 1);
+    }
+});
+
+// ตั้งค่าเสียง
+function syncSoundModalUI() {
+    const btnSfx = document.getElementById('btn-toggle-sfx');
+    const btnBgm = document.getElementById('btn-toggle-bgm');
+    btnSfx.textContent = sound.sfxEnabled ? 'เปิดอยู่' : 'ปิดเสียง';
+    btnSfx.className = `btn ${sound.sfxEnabled ? 'btn-green' : 'btn-slate'}`;
+    btnBgm.textContent = sound.bgmEnabled ? 'เปิดอยู่' : 'ปิดเสียง';
+    btnBgm.className = `btn ${sound.bgmEnabled ? 'btn-green' : 'btn-slate'}`;
+    const pct = Math.round(sound.volume * 100);
+    document.getElementById('vol-slider').value = pct;
+    document.getElementById('vol-label').textContent = `${pct}%`;
+}
+
+document.getElementById('btn-open-sound').addEventListener('click', () => {
+    sound.playClick();
+    syncSoundModalUI();
+    document.getElementById('modal-sound').classList.add('active');
+});
+
+document.getElementById('btn-pause-sound').addEventListener('click', () => {
+    sound.playClick();
+    syncSoundModalUI();
+    document.getElementById('modal-sound').classList.add('active');
+});
+
+document.getElementById('btn-close-sound').addEventListener('click', () => {
+    sound.playClick();
+    document.getElementById('modal-sound').classList.remove('active');
+});
+
+document.getElementById('btn-toggle-sfx').addEventListener('click', () => {
+    sound.sfxEnabled = !sound.sfxEnabled;
+    sound.playClick();
+    syncSoundModalUI();
+    writeSaveData();
+});
+
+document.getElementById('btn-toggle-bgm').addEventListener('click', () => {
+    sound.bgmEnabled = !sound.bgmEnabled;
+    sound.playClick();
+    if (sound.bgmEnabled) sound.startBGM();
+    syncSoundModalUI();
+    writeSaveData();
+});
+
+document.getElementById('vol-slider').addEventListener('input', (e) => {
+    sound.volume = Number(e.target.value) / 100;
+    document.getElementById('vol-label').textContent = `${e.target.value}%`;
+    writeSaveData();
+});
+
+// เริ่มต้นระบบเมื่อโหลดหน้าเว็บเสร็จสมบูรณ์
+window.addEventListener('load', () => {
+    loadSaveData();
+    showScreen('screen-menu');
+    resizeCanvas();
+    requestAnimationFrame(gameLoop);
+});
+</script>
+</body>
+</html>
